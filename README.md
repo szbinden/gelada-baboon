@@ -1,6 +1,10 @@
 # MATLAB Fall 2014 â€“ Research Plan
 
-> * Group Name: 
+<<<<<<< Updated upstream
+> * Group Name: SIMonkey
+=======
+> * Group Name: SIMonkey
+>>>>>>> Stashed changes
 > * Group participants names: Frank Grossenbacher, Michael Heutschi, Derk Wild, Sofia Zbinden
 > * Project Title: Modelling social affiliation in gelada baboons
 
