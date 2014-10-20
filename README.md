@@ -1,7 +1,7 @@
-# MATLAB Fall 2014 – Research Plan
+# MATLAB Fall 2014 â€“ Research Plan
 
 > * Group Name: 
-> * Group participants names: Frank Grossenbacher, Michael Heutschi, Derk Wild, Sofia Zbinden)
+> * Group participants names: Frank Grossenbacher, Michael Heutschi, Derk Wild, Sofia Zbinden
 > * Project Title: Modelling social affiliation in gelada baboons
 
 ## General Introduction
@@ -32,7 +32,7 @@ Under what circumstances can a population benefit of a multi level society socia
 
 ## References 
 
-Puga-Gonz�lez, I., Hildenbrandt, H., & Hemelrijk, C.K. (2009). Emergent patterns of social affiliation in primates, a model. Plos Computational Biology, 5 (12).
+Puga-González, I., Hildenbrandt, H., & Hemelrijk, C.K. (2009). Emergent patterns of social affiliation in primates, a model. Plos Computational Biology, 5 (12).
 
 %(Add the bibliographic references you intend to use)
 %(Explain possible extension to the above models)
