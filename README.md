@@ -1,9 +1,8 @@
-# MATLAB Fall 2014 – Research Plan (Template)
-(text between brackets to be removed)
+# MATLAB Fall 2014 – Research Plan
 
 > * Group Name: (be creative!)
-> * Group participants names: (alphabetically sorted by last name)
-> * Project Title: (can be changed later)
+> * Group participants names: Frank Grossenbacher, Michael Heutschi, Derk Wild, Sofia Zbinden)
+> * Project Title: Modelling social affiliation in gelada baboons
 
 ## General Introduction
 
@@ -36,7 +35,7 @@
 
 ## Research Methods
 
-(Cellular Automata, Agent-Based Model, Continuous Modeling...) (If you are not sure here: 1. Consult your colleagues, 2. ask the teachers, 3. remember that you can change it afterwards)
+Agent-Based Model
 
 
 ## Other
