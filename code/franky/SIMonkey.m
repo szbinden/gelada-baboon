@@ -2,12 +2,13 @@
 clear all, clc                          % delete all data
 
 %% 0 inital conditions
-crcl = 200;                             % number of circles
-gela = 15;                               % number of baboons
+crcl = 100;                             % number of circles
+gela = 10;                               % number of baboons
+
 
 xpos = rand(gela,crcl);                 % x-position
 ypos = rand(gela,crcl);                 % y-position
-dpos = 0.1;                               % multiplier for moving/fleeing act
+dpos = 0.05;                               % multiplier for moving/fleeing act
 bview = 0.2;                              % baboon's field of vision
 ndist = 10;                             % nearest distance
 flds = 1.5;                               % field size (4th quarter)
@@ -35,7 +36,8 @@ w = rand((gela+1)*gela,crcl);           % interacting matrix
                                     
 adom = zeros(gela,1);                   % each individual's average of dominance
 aanx = zeros(gela,1);                   % each individual's average of anxiety
-
+anxfinit = zeros(gela,1);
+domfinit = zeros(gela,1);
 
 %% 2 loop
 
@@ -129,14 +131,25 @@ for n = 2:crcl                          % loop over circles
             end
         else
             %% 5 no interaction
-            % move randomly            
+            % move randomly
             xpos(i,n) = move(xpos(i,n-1),dpos,flds);
             ypos(i,n) = move(ypos(i,n-1),dpos,flds);
             % update dominance/anxiety
             dom(i,n) = dom(i,n-1);
             anx(i,n) = anx(i,n-1)+danx;
         end
+        domfinit(i) = ceil(5*sum(dom(i,:)/n)); % labels all points with their dominance
+        anxfinit(i) = ceil(5*sum(anx(i,:)/n));
+        plot(xpos(:,(n-1)),ypos(:,(n-1)),'w')
+        for a= 1:gela
+        %text(xpos(a,n-1), ypos(a,(n-1)), int2str(domfinit(a)), 'VerticalAlignment','top', 'HorizontalAlignment','right')
+        %text(xpos(a,n-1), ypos(a,n-1), int2str(anxfinit(a)), 'VerticalAlignment','bottom', 'HorizontalAlignment','right')
+        text(xpos(a,n-1), ypos(a,n-1), int2str(a), 'VerticalAlignment','top', 'HorizontalAlignment','left')
+        end
+        axis([-flds+1 flds -flds+1 flds]);
     end
+    
+    drawnow;
 end
 %% 5 evaluation
 for a=1:crcl                            % collect results of fights/grooming acts
@@ -160,16 +173,17 @@ for a = 1:gela                          % calculate average of dominances/anxiet
     adom(a) = 5*sum(dom(a,:)/crcl);
     aanx(a) = 5*sum(anx(a,:)/crcl);
 end
-
+hold off
 
 %% 6 plot
 figure                                  % N°1: plots all baboons with their dom and anx
 subplot(1,3,1:2)
+axis([-flds+1 flds -flds+1 flds]);
 rectangle('Position',[0,0,1,1])
 hold on,grid on
 for d = 1:crcl
-    domfinit = cellstr(num2str(ceil(100*dom(:,d)))); % labels all points with their dominance
-    anxfinit = cellstr(num2str(ceil(100*anx(:,d)))); % labels all points with their anxiety
+%     domfinit = cellstr(num2str(ceil(100*dom(:,d)))); % labels all points with their dominance
+%     anxfinit = cellstr(num2str(ceil(100*anx(:,d)))); % labels all points with their anxiety
 
     for c = 1:gela
         plot(xpos(c,:),ypos(c,:),'o')
