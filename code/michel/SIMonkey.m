@@ -3,19 +3,18 @@ clear all, clc                          % delete all data
 
 %% 0 inital conditions
 crcl = 300;                             % number of circles
-gela = 8;                              % number of baboons
-
+gela = 8;                               % number of baboons
 
 xpos = rand(gela,crcl);                 % x-position
 ypos = rand(gela,crcl);                 % y-position
-dpos = 0.1;                             % multiplier for moving/fleeing act
-bview = .6;                            % baboon's field of vision
+dpos = 0.04;                            % multiplier for moving/fleeing act
+bview = 0.2;                            % baboon's field of vision
 ndist = 3;                              % nearest distance
 flds = 1.5;                             % field size
 
-dom = rand(gela,crcl);                  % value of dominance
-ddom = 0.15;                             % multiplier for changing dominance
-sdom = 0;                             % attacker must have a "sdom" higher dominance to attack
+dom = 0.5*ones(gela,crcl);              % value of dominance
+ddom = 0.15;                            % multiplier for changing dominance
+sdom = 0.5;                             % attacker must have a "sdom" higher dominance to attack
 anx = rand(gela,crcl);                  % value of anxiety
 danx = 0.3;                             % multiplier for changing anxiety
 
@@ -67,17 +66,17 @@ for n = 2:crcl                          % loop over circles
         % decide if nearest OTHER baboon is near enough for an interaction
         if norm([xpos(i),ypos(i)]-[xpos(o),ypos(o)]) < bview
             % shall i fight? (relative dominance greater than rand)
-            if (dom(i,n-1)/(dom(i,n-1)+dom(o,n-1)) >= rand) && (dom(i,n-1) > dom(o,n-1) + sdom)
+            if (dom(i,n-1)/(dom(i,n-1)+dom(o,n-1)) >= rand) && (dom(i,n-1) < dom(o,n-1) + sdom)
                 %%  41 fight (win or lose)    
                 if dom(i,n-1)/(dom(i,n-1)+dom(o,n-1)) >= rand
                     % i = winner | o = loser
                     w(i,n-1) = 1;
                     w(o+i*gela,n-1) = 0;
                     dom(i,n) = dom(i,n-1)+(w(i,n-1)-(dom(i,n-1)/(dom(i,n-1)+dom(o,n-1))))*ddom;
-                    dom(o,n) = dom(o,n-1)-(w(i,n-1)-(dom(i,n-1)/(dom(i,n-1)+dom(o,n-1))))*ddom;
+                    dom(o,n) = dom(o,n-1)-(w(i,n-1)-(dom(o,n-1)/(dom(i,n-1)+dom(o,n-1))))*ddom;
                     % i takes o's position 
-                    xpos(i,n) = xpos(o,n-1);
-                    ypos(i,n) = ypos(o,n-1);
+                    xpos(i,n) = xpos(i,n-1);
+                    ypos(i,n) = ypos(i,n-1);
                     % o flees
                     xpos(o,n) = move(xpos(o,n-1),1.5*dpos,flds);
                     ypos(o,n) = move(ypos(o,n-1),1.5*dpos,flds);      
@@ -86,7 +85,7 @@ for n = 2:crcl                          % loop over circles
                     w(i,n-1) = 0;
                     w(o+i*gela,n-1) = 1;
                     dom(i,n) = dom(i,n-1)-(w(i,n-1)-(dom(o,n-1)/(dom(i,n-1)+dom(o,n-1))))*ddom;
-                    dom(o,n) = dom(o,n-1)+(w(i,n-1)-(dom(o,n-1)/(dom(i,n-1)+dom(o,n-1))))*ddom;
+                    dom(o,n) = dom(o,n-1)+(w(i,n-1)-(dom(i,n-1)/(dom(i,n-1)+dom(o,n-1))))*ddom;
                     % i flees
                     xpos(i,n) = move(xpos(i,n-1),1.5*dpos,flds);
                     ypos(i,n) = move(ypos(i,n-1),1.5*dpos,flds);
@@ -101,8 +100,8 @@ for n = 2:crcl                          % loop over circles
                     dom(o,n) = 0.001;
                 end
                 % anxiety grows anyway because of the fight
-                anx(i,n) = anx(i,n)+danx;
-                anx(o,n) = anx(o,n)+danx;
+                anx(i,n) = anx(i,n-1)+danx;
+                anx(o,n) = anx(o,n-1)+danx;
             
             else
                 %% 42 no fight
@@ -147,17 +146,17 @@ for n = 2:crcl                          % loop over circles
         
         domfinit(i) = ceil(5*sum(dom(i,:)/n)); % labels all points with their dominance
         anxfinit(i) = ceil(5*sum(anx(i,:)/n));
-%         plot(xpos(:,(n-1)),ypos(:,(n-1)),'w')
-%         grid on
-%         for a= 1:gela
-%         %text(xpos(a,n-1), ypos(a,(n-1)), int2str(domfinit(a)), 'VerticalAlignment','top', 'HorizontalAlignment','right')
-%         %text(xpos(a,n-1), ypos(a,n-1), int2str(anxfinit(a)), 'VerticalAlignment','bottom', 'HorizontalAlignment','right')
-%         text(xpos(a,n-1), ypos(a,n-1), int2str(a), 'VerticalAlignment','top', 'HorizontalAlignment','left')
-%         end
-%         axis([-flds+1 flds -flds+1 flds]);
+        plot(xpos(:,(n-1)),ypos(:,(n-1)),'w')
+        axis off
+        grid on
+        for a= 1:gela
+        %text(xpos(a,n-1), ypos(a,(n-1)), int2str(domfinit(a)), 'VerticalAlignment','top', 'HorizontalAlignment','right')
+        %text(xpos(a,n-1), ypos(a,n-1), int2str(anxfinit(a)), 'VerticalAlignment','bottom', 'HorizontalAlignment','right')
+        text(xpos(a,n-1), ypos(a,n-1), int2str(a), 'VerticalAlignment','top', 'HorizontalAlignment','left')
+        end
+        axis([-flds+1 flds -flds+1 flds]);
     end
-    drawnow;                            % update plot
-    n
+    pause(0.05)                            % update plot
 end
 %% 5 evaluation
 for a=1:crcl                            % collect results of fights/grooming acts
