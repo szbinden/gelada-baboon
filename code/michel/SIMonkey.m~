@@ -46,7 +46,7 @@ lgnd = {1,gela};
 if flds < 1
     flds = 1.01;
 end
-for n = 2:crcl                          % loop over cycles
+for n = 2:crcl                          % loop over circles
     for i = 1:gela                      % loop over baboons | i = "active baboon"
         lgnd{i} = [' = ' num2str(i)];   % legend to identify baboons
         %% 3 find individual
@@ -59,7 +59,7 @@ for n = 2:crcl                          % loop over cycles
                     ddist = norm([xpos(i,n-1),ypos(i,n-1)]-[xpos(j,n-1),ypos(j,n-1)]);
                     o = j;              % set found individual to nearest baboon
                 end
-                dd(i+(n-2)*gela,j) = ddist;       % DO NOT DELETE
+                %dd(i+(n-2)*gela,j) = ddist;       % DO NOT DELETE
             end
         end
         enem(i,n-1) = o;                % list enemy
@@ -67,7 +67,7 @@ for n = 2:crcl                          % loop over cycles
         % decide if nearest OTHER baboon is near enough for an interaction
         if norm([xpos(i),ypos(i)]-[xpos(o),ypos(o)]) < bview
             % shall i fight? (relative dominance greater than rand)
-            if (dom(i,n-1)/(dom(i,n-1)+dom(o,n-1)) >= rand) && (dom(i,n-1) > dom(o,n-1) + sdom)
+            if (dom(i,n-1)/(dom(i,n-1)+dom(o,n-1)) >= rand) && (dom(i,n-1) < dom(o,n-1) + sdom)
                 %%  41 fight (win or lose)    
                 if dom(i,n-1)/(dom(i,n-1)+dom(o,n-1)) >= rand
                     % i = winner | o = loser
@@ -147,16 +147,16 @@ for n = 2:crcl                          % loop over cycles
         
         domfinit(i) = ceil(5*sum(dom(i,:)/n)); % labels all points with their dominance
         anxfinit(i) = ceil(5*sum(anx(i,:)/n));
-        plot(xpos(:,(n-1)),ypos(:,(n-1)),'w')
-        grid on
-        for a= 1:gela
-        %text(xpos(a,n-1), ypos(a,(n-1)), int2str(domfinit(a)), 'VerticalAlignment','top', 'HorizontalAlignment','right')
-        %text(xpos(a,n-1), ypos(a,n-1), int2str(anxfinit(a)), 'VerticalAlignment','bottom', 'HorizontalAlignment','right')
-        text(xpos(a,n-1), ypos(a,n-1), int2str(a), 'VerticalAlignment','top', 'HorizontalAlignment','left')
-        end
-        axis([-flds+1 flds -flds+1 flds]);
+%         plot(xpos(:,(n-1)),ypos(:,(n-1)),'w')
+%         grid on
+%         for a= 1:gela
+%         %text(xpos(a,n-1), ypos(a,(n-1)), int2str(domfinit(a)), 'VerticalAlignment','top', 'HorizontalAlignment','right')
+%         %text(xpos(a,n-1), ypos(a,n-1), int2str(anxfinit(a)), 'VerticalAlignment','bottom', 'HorizontalAlignment','right')
+%         text(xpos(a,n-1), ypos(a,n-1), int2str(a), 'VerticalAlignment','top', 'HorizontalAlignment','left')
+%         end
+%         axis([-flds+1 flds -flds+1 flds]);
     end
-    %drawnow;                            % update plot
+    drawnow;                            % update plot
     n
 end
 %% 5 evaluation

@@ -7,7 +7,7 @@ function [ y ] = move( x,d,figg )
 if abs(0.5-x) > (figg-0.5)*0.9
     y = x+(0.5-x)*d;
     while -figg+1 > y || figg < y
-        y = y*rand;
+        y = x+d*sin(2*pi*rand);
     end
 % move randomly
 else
