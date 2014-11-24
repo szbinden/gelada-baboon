@@ -4,7 +4,7 @@ clear all, clc                          % delete all data
 %% 0 inital conditions
 crcl = 100;                             % number of cycles
 gela = 14;                               % number of baboons
-dt = 0.001;                               % plot updating time
+dt = 0.01;                               % plot updating time
 
 xpos = rand(gela,1);                 % x-position
 ypos = rand(gela,1);                 % y-position
@@ -35,14 +35,16 @@ w = rand((gela+1)*gela,crcl);           % interacting matrix
                                         % 2 - groomee
                                         % 3 - groomer
                                     
-% adom = zeros(gela,1);                   % each individual's average of dominance
-% aanx = zeros(gela,1);                   % each individual's average of anxiety
+ndom = zeros(gela,1);                   % sum of all dominances over n cycles
+adom = zeros(gela,1);                   % each individual's average of dominance
+nanx = zeros(gela,1);                   % sum of all anxieties over n cycles
+aanx = zeros(gela,1);                   % each individual's average of anxiety
 
 if flds <= 1
     flds = 1.01;
 end
-%% 2 loop
 figure
+%% 2 loop
 subplot(1,3,1:2)                        
 for n = 1:crcl                          % loop over cycles
     for i = 1:gela                      % loop over baboons | i = "active baboon"
@@ -84,6 +86,11 @@ for n = 1:crcl                          % loop over cycles
                     % write new dominances
                     dom(i) = dom(i)+(w(i,n)-(dom(i)/(dom(i)+dom(o))))*ddom;
                     dom(o) = dom(o)-(w(i,n)-(dom(o)/(dom(i)+dom(o))))*ddom;
+                    % calculate average dominances
+                    ndom(i) = ndom(i)+dom(i);     % sum over n cycles
+                    adom(i) = ndom(i)/n;          % average over n cycles
+                    ndom(o) = ndom(o)+dom(o);     
+                    adom(o) = ndom(o)/n;
                     % i doesn't move 
                     xpos(i) = xpos(i);
                     ypos(i) = ypos(i);
@@ -108,6 +115,11 @@ for n = 1:crcl                          % loop over cycles
                     % write new dominances
                     dom(i) = dom(i)-(w(i)-(dom(o)/(dom(i)+dom(o))))*ddom;
                     dom(o) = dom(o)+(w(i)-(dom(i)/(dom(i)+dom(o))))*ddom;
+                    % calculate average dominances
+                    ndom(i) = ndom(i)+dom(i);     % sum over n cycles
+                    adom(i) = ndom(i)/n;          % average over n cycles
+                    ndom(o) = ndom(o)+dom(o);     
+                    adom(o) = ndom(o)/n;
                     % o doesn't move
                     xpos(o) = xpos(o);
                     ypos(o) = ypos(o);
@@ -125,11 +137,16 @@ for n = 1:crcl                          % loop over cycles
                 % anxiety grows anyway because of the fight
                 anx(i) = anx(i)+danx;
                 anx(o) = anx(o)+danx;
+                % calculate average anxieties
+                nanx(i) = nanx(i)+anx(i);     % sum over n cycles
+                aanx(i) = nanx(i)/n;          % average over n cycles
+                nanx(o) = nanx(o)+anx(o);     
+                aanx(o) = nanx(o)/n;
             else
                 %% 5- no fight
                 % shall i groom? (yes or no)
                 if anx(i) >= rand
-                    %% 5-- grooming
+                    %% 5- grooming
                     % only groom if own dominance is lower than the other one's is
                     if dom(i) <= dom(o)
                         % i = groomer | o = groomee
@@ -137,22 +154,29 @@ for n = 1:crcl                          % loop over cycles
                         w(o+i*gela,n) = 2;
                         plotinteract(xpos(i),ypos(i),w(i,n),'bottom');
                         plotinteract(xpos(o),ypos(o),w(o+i*gela,n),'top');
+                        % write new anxieties
                         anx(i) = anx(i)-danx;
-                        
+                        anx(o) = anx(o)-danx*1.05;
+                        % calculate average anxieties
+                        nanx(i) = nanx(i)+anx(i);     % sum over n cycles
+                        aanx(i) = nanx(i)/n;          % average over n cycles
+                        nanx(o) = nanx(o)+anx(o);     
+                        aanx(o) = nanx(o)/n;
                         % groomer moves next to groomee
                         xpos(i) = move(xpos(o),0.03,flds);
                         ypos(i) = move(ypos(o),0.03,flds);
-                        anx(o) = anx(o)-danx*1.05;
-                        
-                        
-                        % the other one is higher rank
+                    % the other one is higher rank
                     else
                         % no changes need to be done
                     end
                     
                 else
-                    %% 5-- no grooming
-                    anx(i) = anx(i)+danx/gela;
+                    %% 5- no grooming
+%                     anx(i) = anx(i)+danx/gela;
+%                     % calculate average anxieties
+%                     nanx(i) = nanx(i)+anx(i);     % sum over n cycles
+%                     aanx(i) = nanx(i)/n;          % average over n cycles
+            
                 end
             end
         else
@@ -164,12 +188,18 @@ for n = 1:crcl                          % loop over cycles
                 ypos(i) = move(ypos(i),dpos,flds);
                 % update anxiety
                 anx(i) = anx(i)+danx;
+                % calculate average anxieties
+                nanx(i) = nanx(i)+anx(i);     % sum over n cycles
+                aanx(i) = nanx(i)/n;          % average over n cycles
             % do not do anything
             else
                 % no changes need to be done
             end
             % decrease dominance no being activ
             dom(i) = dom(i)-ddom/gela;
+            % calculate average dominances
+            ndom(i) = ndom(i)+dom(i);     % sum over n cycles
+            adom(i) = ndom(i)/n;          % average over n cycles
         end
         % set minimum of dominance
         if dom(i) <= 0.001
@@ -243,12 +273,12 @@ else
     fmax = 10*ceil((max(won)+1)/10);
 end
 subplot(4,3,3)                          % N°2: plots each baboon's number of victories
-[WD,B11,S12] = plotyy(ngela,won,ngela,dom,'bar','stem');
+[WD,B11,S12] = plotyy(ngela,won,ngela,adom,'bar','stem');
 xlabel(WD(1),'BABOON')
 ylabel(WD(1),'VICTORIES')
-ylabel(WD(2),'final DOM')
+ylabel(WD(2),'ø-DOM')
 ylim(WD(1),[0,fmax])
-ylim(WD(2),[0,floor(max(dom))+1])
+ylim(WD(2),[0,floor(max(adom))+1])
 WD(2).YColor = 'r';
 B11.EdgeColor = 'b';
 S12.Color = 'r';
@@ -256,12 +286,12 @@ grid on
 
 
 subplot(4,3,6)                          % N°3: plots each baboon's number of defeats
-[LD,B21,S22] = plotyy(ngela,lost,ngela,dom,'bar','stem');
+[LD,B21,S22] = plotyy(ngela,lost,ngela,adom,'bar','stem');
 xlabel(LD(1),'BABOON')
 ylabel(LD(1),'DEFEATS')
-ylabel(LD(2),'final DOM')
+ylabel(LD(2),'ø-DOM')
 ylim(LD(1),[0,fmax])
-ylim(LD(2),[0,floor(max(dom))+1])
+ylim(LD(2),[0,floor(max(adom))+1])
 LD(2).YColor = 'r';
 B21.EdgeColor = 'b';
 S22.Color = 'r';
@@ -273,24 +303,24 @@ else
     gmax = 10*ceil((max(grmr)+1)/10);
 end
 subplot(4,3,9)                          % N°4: plots each baboon's number of acts as groomer
-[GRA,B31,S32] = plotyy(ngela,grmr,ngela,anx,'bar','stem');
+[GRA,B31,S32] = plotyy(ngela,grmr,ngela,aanx,'bar','stem');
 xlabel(GRA(1),'BABOON')
 ylabel(GRA(1),'GROOMER')
-ylabel(GRA(2),'final ANX')
+ylabel(GRA(2),'ø-ANX')
 ylim(GRA(1),[0,gmax])
-ylim(GRA(2),[0,floor(max(anx))+1])
+ylim(GRA(2),[0,floor(max(aanx))+1])
 GRA(2).YColor = 'r';
 B31.EdgeColor = 'b';
 S32.Color = 'r';
 grid on
 
 subplot(4,3,12)                          % N°5: plots each baboon's number of acts as groomee
-[GEA,B41,S42] = plotyy(ngela,grme,ngela,anx,'bar','stem');
+[GEA,B41,S42] = plotyy(ngela,grme,ngela,aanx,'bar','stem');
 xlabel(GEA(1),'BABOON')
 ylabel(GEA(1),'GROOMEE')
-ylabel(GEA(2),'final ANX')
+ylabel(GEA(2),'ø-ANX')
 ylim(GEA(1),[0,gmax])
-ylim(GEA(2),[0,floor(max(anx))+1])
+ylim(GEA(2),[0,floor(max(aanx))+1])
 GEA(2).YColor ='r';
 B41.EdgeColor = 'b';
 S42.Color = 'r';
