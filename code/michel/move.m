@@ -1,17 +1,14 @@
-function [ y ] = move( x,d,figg ) %xpos,0.05,1.5
+function [ y ] = move( x,d,f ) %xpos,0.05,1.5
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
-%  move towards point 0.5/0.5
-if abs(0.5-x) > (figg-0.5)*0.9
+% move towards point 0.5/0.5 when overshot 90% of field size
+if abs(0.5-x) > (f-0.5)*0.9
     y = x+(0.5-x)*d;
-    while -figg+1 > y || figg < y
-        y = x+d*5*sin(2*pi*rand);
-    end
-%move randomly
+% move randomly
 else
     y = x+d*cos(2*pi*rand);
-    while -figg+1 > y || figg < y
+    while -f+1 > y || f < y
         y = x+d*sin(2*pi*rand);
     end
 end
