@@ -1,36 +1,38 @@
-%% SIMonkey
+%% 0 SIMonkey
 clear all, clc                          % delete all data
 
-%% 0 inital conditions
-crcl = 100;                             % number of cycles
+%% 1 inital conditions
+crcl = 200;                             % number of cycles
 gela = 14;                               % number of baboons
-dt = 0.01;                               % plot updating time
+dt = 0.1;                               % plot updating time
 
 xpos = rand(gela,1);                 % x-position
 ypos = rand(gela,1);                 % y-position
 dpos = 0.02;                            % multiplier for moving act
 fpos = 0.2;                             % multiplier for fleeing act
 bview = 0.4;                            % baboon's field of vision
-acty = 0.9;                             % baboon's activity
-flds = 1.5;                             % field size
+acty = 0.8;                             % baboon's activity
+flds = 1.2;                             % field size
 
-dom = 0.54*ones(gela,1);              % value of dominance
+dom = 0.7*ones(gela,1);              % value of dominance
 ddom = 0.8;                            % multiplier for changing dominance
+mdom = 0.001;                           % minimum of possible dominance
 anx = 0.5*ones(gela,1);                  % value of anxiety
 danx = 0.1;                             % multiplier for changing anxiety
+manx = 0.001;                           % minimum of possible anxiety
 
-%% 1 auxiliary variables (Hilfsvariablen)
+%% 2 auxiliary variables (Hilfsvariablen)
 ngela = (1:gela)';                       % baboon numbering
 o = 0;                                  % nearest OTHER baboon
 enem = zeros(gela,crcl);                % list of enemies
-won = zeros(gela,1);                    % list of victories fights per baboon
-lost = zeros(gela,1);                   % list of defeats fights per baboon
+vict = zeros(gela,1);                    % list of victories fights per baboon
+defe = zeros(gela,1);                   % list of defeats fights per baboon
 grmr = zeros(gela,1);                   % list of "groomed" per baboon
 grme = zeros(gela,1);                   % list of "was groomed" per baboon
 noin = zeros(gela,1);                   % list of "no interactions"
 
-w = rand((gela+1)*gela,crcl);           % interacting matrix
-                                        % 0 - loser
+%w = rand((gela+1)*gela,crcl);           % interacting matrix
+w = rand(gela,1);                                        % 0 - loser
                                         % 1 - winner
                                         % 2 - groomee
                                         % 3 - groomer
@@ -44,24 +46,24 @@ if flds <= 1
     flds = 1.01;
 end
 figure
-%% 2 loop
-subplot(1,3,1:2)                        
+%% 3 loop             
 for n = 1:crcl                          % loop over cycles
     for i = 1:gela                      % loop over baboons | i = "active baboon"
-        %% 3 position plot of all gelada by their number (live)
+        %% 4 position plot of all gelada by their number (live)
+        subplot(1,3,1:2)
         plot(xpos(:),ypos(:),'.','Color','w')
-        hold on, grid on
+        grid on
         rectangle('Position',[0,0,1,1])
-        text(-0.4,-0.4,int2str(n))
+        text(-0.1,-0.1,int2str(n))
         axis([-flds+1 flds -flds+1 flds]);  % set field size
         text(xpos(:),ypos(:),int2str(ngela),'FontSize',14)
         title('GELADA BABOON - PLAYGROUND')
-        %% 4 find individual
+        %% 5 find individual
         ddist = flds*1.5;
         for j = 1:gela                  % scan over baboons
             if j ~= i                   % exclude interacting with oneself
                 % check if a found individual is in my operating distance
-                if norm([xpos(i),ypos(i)]-[xpos(j),ypos(j)]) < ddist && norm([xpos(i),ypos(i)]-[xpos(j),ypos(j)]) > (exp(dom(i))-1)/3
+                if norm([xpos(i),ypos(i)]-[xpos(j),ypos(j)]) < ddist && norm([xpos(i),ypos(i)]-[xpos(j),ypos(j)]) > (exp(dom(i))-1)/10
                     % set found distance to new operating distance
                     ddist = norm([xpos(i),ypos(i)]-[xpos(j),ypos(j)]);
                     o = j;              % set found individual to nearest baboon
@@ -72,28 +74,26 @@ for n = 1:crcl                          % loop over cycles
         enem(i,n) = o;                % list enemy
         % decide if nearest OTHER baboon is near enough for an interaction
         if ddist < bview
-            %% 5 interaction
+            %% 6.1 interaction
             % shall i fight or groom? (yes or no)
             if dom(i)/(dom(i)+dom(o)) >= rand
-                %%  5- fight   
+                %%  6.1.1 fight   
                 if dom(i)/(dom(i)+dom(o)) >= rand
                     % i = winner | o = loser
-                    w(i,n) = 1;
-                    w(o+i*gela,n) = 0;
+                    w(i) = 1;                       % w(i,n) = 1;          
+                    w(o) = 0;                       % w(o+i*gela,n) = 0;
+                    % increment victories/defeats
+                    vict(i) = vict(i)+1;
+                    defe(o) = defe(o)+1;
                     % plot interactions
-                    plotinteract(xpos(i),ypos(i),w(i,n),'bottom');
-                    plotinteract(xpos(o),ypos(o),w(o+i*gela,n),'top');
+                    plotinteract(xpos(i),ypos(i),w(i),'bottom');
+                    plotinteract(xpos(o),ypos(o),w(o),'top');
                     % write new dominances
-                    dom(i) = dom(i)+(w(i,n)-(dom(i)/(dom(i)+dom(o))))*ddom;
-                    dom(o) = dom(o)-(w(i,n)-(dom(o)/(dom(i)+dom(o))))*ddom;
-                    % calculate average dominances
-                    ndom(i) = ndom(i)+dom(i);     % sum over n cycles
-                    adom(i) = ndom(i)/n;          % average over n cycles
-                    ndom(o) = ndom(o)+dom(o);     
-                    adom(o) = ndom(o)/n;
-                    % i doesn't move 
-                    xpos(i) = xpos(i);
-                    ypos(i) = ypos(i);
+                    dom(i) = dom(i)+(w(i)-(dom(i)/(dom(i)+dom(o))))*ddom;
+                    dom(o) = dom(o)-(w(i)-(dom(o)/(dom(i)+dom(o))))*ddom;
+                    % i doesn't move
+                    xpos(i) = xpos(i)+(xpos(o)-xpos(i))*2/3;
+                    ypos(i) = ypos(i)+(ypos(o)-ypos(i))*2/3;
                     % o flees
                     % expected loser flees less far
                     if dom(o) <= dom(i)
@@ -107,22 +107,20 @@ for n = 1:crcl                          % loop over cycles
                     
                 else
                     % i = loser | o = winner
-                    w(i,n) = 0;
-                    w(o+i*gela,n) = 1;
+                    w(i) = 0;
+                    w(o) = 1;
+                    % increment victories/defeats
+                    vict(o) = vict(o)+1;
+                    defe(i) = defe(i)+1;
                     % plot interactions
-                    plotinteract(xpos(i),ypos(i),w(i,n),'bottom');
-                    plotinteract(xpos(o),ypos(o),w(o+i*gela,n),'top');
+                    plotinteract(xpos(i),ypos(i),w(i),'bottom');
+                    plotinteract(xpos(o),ypos(o),w(o),'top');
                     % write new dominances
-                    dom(i) = dom(i)-(w(i)-(dom(o)/(dom(i)+dom(o))))*ddom;
-                    dom(o) = dom(o)+(w(i)-(dom(i)/(dom(i)+dom(o))))*ddom;
-                    % calculate average dominances
-                    ndom(i) = ndom(i)+dom(i);     % sum over n cycles
-                    adom(i) = ndom(i)/n;          % average over n cycles
-                    ndom(o) = ndom(o)+dom(o);     
-                    adom(o) = ndom(o)/n;
+                    dom(i) = dom(i)-(w(i)-(dom(i)/(dom(i)+dom(o))))*ddom;
+                    dom(o) = dom(o)+(w(i)-(dom(o)/(dom(i)+dom(o))))*ddom;
                     % o doesn't move
-                    xpos(o) = xpos(o);
-                    ypos(o) = ypos(o);
+                    xpos(o) = xpos(o)+(xpos(i)-xpos(o))*2/3;
+                    ypos(o) = ypos(o)+(ypos(i)-ypos(o))*2/3;
                     % i flees
                     % expected loser flees less far
                     if dom(o) >= dom(i)
@@ -134,29 +132,47 @@ for n = 1:crcl                          % loop over cycles
                         ypos(i) = move(ypos(i),fpos,flds);
                     end
                 end
+                % set minimum of dominance
+                dom(i) = setminof(dom(i),mdom);
+                dom(o) = setminof(dom(o),mdom);
+                % calculate average dominances
+                ndom(i) = ndom(i)+dom(i);     % sum over n cycles
+                adom(i) = ndom(i)/n;          % average over n cycles
+                ndom(o) = ndom(o)+dom(o);
+                adom(o) = ndom(o)/n;
                 % anxiety grows anyway because of the fight
                 anx(i) = anx(i)+danx;
                 anx(o) = anx(o)+danx;
+                % set minimum of anxiety
+                anx(i) = setminof(anx(i),manx);
+                anx(o) = setminof(anx(o),manx);
                 % calculate average anxieties
                 nanx(i) = nanx(i)+anx(i);     % sum over n cycles
                 aanx(i) = nanx(i)/n;          % average over n cycles
                 nanx(o) = nanx(o)+anx(o);     
                 aanx(o) = nanx(o)/n;
             else
-                %% 5- no fight
+                % 6.1.1 no fight
                 % shall i groom? (yes or no)
                 if anx(i) >= rand
-                    %% 5- grooming
+                    %% 6.1.2 grooming
                     % only groom if own dominance is lower than the other one's is
                     if dom(i) <= dom(o)
                         % i = groomer | o = groomee
-                        w(i,n) = 3;
-                        w(o+i*gela,n) = 2;
-                        plotinteract(xpos(i),ypos(i),w(i,n),'bottom');
-                        plotinteract(xpos(o),ypos(o),w(o+i*gela,n),'top');
+                        w(i) = 3;
+                        w(o) = 2;
+                        % increment groomer/groomee
+                        grmr(i) = grmr(i)+1;
+                        grme(o) = grme(o)+1;
+                        % plot interactions
+                        plotinteract(xpos(i),ypos(i),w(i),'bottom');
+                        plotinteract(xpos(o),ypos(o),w(o),'top');
                         % write new anxieties
                         anx(i) = anx(i)-danx;
-                        anx(o) = anx(o)-danx*1.05;
+                        anx(o) = anx(o)-danx*1.5;
+                        % set minimum of anxiety
+                        anx(i) = setminof(anx(i),manx);
+                        anx(o) = setminof(anx(o),manx);
                         % calculate average anxieties
                         nanx(i) = nanx(i)+anx(i);     % sum over n cycles
                         aanx(i) = nanx(i)/n;          % average over n cycles
@@ -171,48 +187,48 @@ for n = 1:crcl                          % loop over cycles
                     end
                     
                 else
-                    %% 5- no grooming
-%                     anx(i) = anx(i)+danx/gela;
-%                     % calculate average anxieties
-%                     nanx(i) = nanx(i)+anx(i);     % sum over n cycles
-%                     aanx(i) = nanx(i)/n;          % average over n cycles
+                    % 6.1.2 no grooming
+                    w(i) = rand;
+                    % plot interaction
+                    plotinteract(xpos(i),ypos(i),w(i),'bottom');
+                    anx(i) = anx(i)+danx/2;
+                    % set minimum of anxiety
+                    anx(i) = setminof(anx(i),manx);
+                    % calculate average anxieties
+                    nanx(i) = nanx(i)+anx(i);     % sum over n cycles
+                    aanx(i) = nanx(i)/n;          % average over n cycles
             
                 end
             end
         else
-            %% 5 no interaction
+            %% 6.2 no interaction
             % do a random move
             if acty >= rand
                 % move randomly
-                xpos(i) = move(xpos(i),dpos,flds);
-                ypos(i) = move(ypos(i),dpos,flds);
-                % update anxiety
-                anx(i) = anx(i)+danx;
+                xpos(i) = move(xpos(i),2*dpos,flds);
+                ypos(i) = move(ypos(i),2*dpos,flds);
+            % do not do anything
+            else
+                w(i) = rand;
+                % plot interaction
+                plotinteract(xpos(i),ypos(i),w(i),'top');
+                % decrement dominance by not being activ
+                dom(i) = dom(i)-ddom/gela;
+                % set minimum of dominance
+                dom(i) = setminof(dom(i),mdom);
+                % calculate average dominances
+                ndom(i) = ndom(i)+dom(i);     % sum over n cycles
+                adom(i) = ndom(i)/n;          % average over n cycles
+                % increment anxiety by not being activ
+                anx(i) = anx(i)+danx/2;
+                % set minimum of anxiety
+                anx(i) = setminof(anx(i),manx);
                 % calculate average anxieties
                 nanx(i) = nanx(i)+anx(i);     % sum over n cycles
                 aanx(i) = nanx(i)/n;          % average over n cycles
-            % do not do anything
-            else
-                % no changes need to be done
             end
-            % decrease dominance no being activ
-            dom(i) = dom(i)-ddom/gela;
-            % calculate average dominances
-            ndom(i) = ndom(i)+dom(i);     % sum over n cycles
-            adom(i) = ndom(i)/n;          % average over n cycles
         end
-        % set minimum of dominance
-        if dom(i) <= 0.001
-            dom(i) = 0.001;
-        elseif dom(o) <= 0.001
-            dom(o) = 0.001;
-        end
-        % set minimum of anxiety
-        if anx(i) <= 0.001
-            anx(i) = 0.001;
-        elseif anx(o) <= 0.001
-            anx(o) = 0.001;
-        end
+        
         
         
 %         % find strongest gelada
@@ -224,109 +240,66 @@ for n = 1:crcl                          % loop over cycles
 %                 save = a;
 %             end
 %         end
-       hold off
        pause(dt)
+       
+    
     end
-%     pause(dt)
-%     hold off
-end
-
-%% 7 evaluation
-for a=1:crcl                            % collect results of fights/grooming acts
-    for b=1:gela*(gela+1)
-        z = floor((b-1)/gela);
-        if w(b,a) == 0                  % increment defeats
-            lost(b-(z*gela),1) = lost(b-(z*gela),1)+1;
-        elseif w(b,a) == 1              % increment victories
-            won(b-(z*gela),1) = won(b-(z*gela),1)+1;
-        elseif w(b,a) == 2              % increment groomer acts
-            grme(b-(z*gela),1) = grme(b-(z*gela),1)+1;
-        elseif w(b,a) == 3              % increment groomee acts
-            grmr(b-(z*gela),1) = grmr(b-(z*gela),1)+1;
-        elseif z == 0                   % increment "no interaction"
-            noin(b-(z*gela),1) = noin(b-(z*gela),1)+1;
-        end
-    end
-end
-
-% for a = 1:gela                          % calculate average of dominances/anxieties
-%     adom(a) = sum(dom(a,:))/crcl;
-%     aanx(a) = sum(anx(a,:))/crcl;
-% end
-
-%% 8 analysis
-% figure                                  % N°1: plots all baboons with their dom and anx
-% subplot(1,3,1:2)
-% axis([-flds+1 flds -flds+1 flds]);
-% rectangle('Position',[0,0,1,1])
-% hold on,grid on
-% for a = 1:crcl
-%     for b = 1:gela
-%         plot(xpos(b),ypos(b))
-%     end
-% end
-% title('GELADA BABOON - PLAYGROUND')
-
-if max(won) < max(lost)
-    fmax = 10*ceil((max(lost)+1)/10);
+%% 7 subplot 1-4
+if max(vict) < max(defe)
+    fmax = 5*ceil((max(defe)+1)/5);
 else
-    fmax = 10*ceil((max(won)+1)/10);
+    fmax = 5*ceil((max(vict)+1)/5);
 end
 subplot(4,3,3)                          % N°2: plots each baboon's number of victories
-[WD,B11,S12] = plotyy(ngela,won,ngela,adom,'bar','stem');
+[WD,B11,S12] = plotyy(ngela,vict,ngela,defe,'bar','stem');
 xlabel(WD(1),'BABOON')
 ylabel(WD(1),'VICTORIES')
-ylabel(WD(2),'ø-DOM')
+ylabel(WD(2),'DEFEATS')
 ylim(WD(1),[0,fmax])
-ylim(WD(2),[0,floor(max(adom))+1])
+ylim(WD(2),[0,fmax])
 WD(2).YColor = 'r';
 B11.EdgeColor = 'b';
 S12.Color = 'r';
 grid on
 
-
 subplot(4,3,6)                          % N°3: plots each baboon's number of defeats
-[LD,B21,S22] = plotyy(ngela,lost,ngela,adom,'bar','stem');
+[LD,B21,S22] = plotyy(ngela,dom,ngela,adom,'bar','stem');
 xlabel(LD(1),'BABOON')
-ylabel(LD(1),'DEFEATS')
+ylabel(LD(1),'curr-DOM')
 ylabel(LD(2),'ø-DOM')
-ylim(LD(1),[0,fmax])
+ylim(LD(1),[0,floor(max(dom))+1])
 ylim(LD(2),[0,floor(max(adom))+1])
-LD(2).YColor = 'r';
+LD(2).YColor = [50,177,65]/255;
 B21.EdgeColor = 'b';
-S22.Color = 'r';
+S22.Color = [50,177,65]/255;
 grid on
 
 if max(grmr) < max(grme)
-    gmax = 10*ceil((max(grme)+1)/10);
+    gmax = 5*ceil((max(grme)+1)/5);
 else
-    gmax = 10*ceil((max(grmr)+1)/10);
+    gmax = 5*ceil((max(grmr)+1)/5);
 end
 subplot(4,3,9)                          % N°4: plots each baboon's number of acts as groomer
-[GRA,B31,S32] = plotyy(ngela,grmr,ngela,aanx,'bar','stem');
+[GRA,B31,S32] = plotyy(ngela,grmr,ngela,grme,'bar','stem');
 xlabel(GRA(1),'BABOON')
 ylabel(GRA(1),'GROOMER')
-ylabel(GRA(2),'ø-ANX')
+ylabel(GRA(2),'GROOMEE')
 ylim(GRA(1),[0,gmax])
-ylim(GRA(2),[0,floor(max(aanx))+1])
+ylim(GRA(2),[0,gmax])
 GRA(2).YColor = 'r';
 B31.EdgeColor = 'b';
 S32.Color = 'r';
 grid on
 
 subplot(4,3,12)                          % N°5: plots each baboon's number of acts as groomee
-[GEA,B41,S42] = plotyy(ngela,grme,ngela,aanx,'bar','stem');
+[GEA,B41,S42] = plotyy(ngela,anx,ngela,aanx,'bar','stem');
 xlabel(GEA(1),'BABOON')
-ylabel(GEA(1),'GROOMEE')
+ylabel(GEA(1),'curr-ANX')
 ylabel(GEA(2),'ø-ANX')
-ylim(GEA(1),[0,gmax])
+ylim(GEA(1),[0,floor(max(anx))+1])
 ylim(GEA(2),[0,floor(max(aanx))+1])
-GEA(2).YColor ='r';
+GEA(2).YColor = [50,177,65]/255;
 B41.EdgeColor = 'b';
-S42.Color = 'r';
+S42.Color = [50,177,65]/255;
 grid on
-
-
-
-
-
+end

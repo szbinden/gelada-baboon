@@ -1,4 +1,4 @@
-function [ m ] = plotinteract( x,y,a,p )
+function [  ] = plotinteract( x,y,a,p )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 % defeated
@@ -13,8 +13,10 @@ elseif a == 2
 % groomed
 elseif a == 3
     text(x, y, 'Gr', 'VerticalAlignment',p, 'HorizontalAlignment','right','Color','m','FontWeight','bold','FontSize',14)
+% no interaction
+else
+    text(x, y, '-', 'VerticalAlignment',p, 'HorizontalAlignment','right','Color','k','FontWeight','bold','FontSize',14)
 end
 %pause(0.5)
-m = 1;
 end
 
