@@ -2,6 +2,7 @@
 clear all, clc                          % delete all data
 
 %% 0 inital conditions
+<<<<<<< Updated upstream:code/michel/old/SIMonkey.m
 crcl = 100;                             % number of cycles
 gela = 24;                               % number of baboons
 
@@ -11,6 +12,17 @@ dpos = 0.02;                            % multiplier for moving act
 fpos = 0.2;                             % multiplier for fleeing act
 bview = 0.3;                            % baboon's field of vision
 acty = 0.9;                             % baboon's activity
+=======
+crcl = 300;                             % number of circles
+gela = 10;                              % number of baboons
+
+
+xpos = rand(gela,crcl);                 % x-position
+ypos = rand(gela,crcl);                 % y-position
+dpos = 0.;                             % multiplier for moving/fleeing act
+bview = .6;                            % baboon's field of vision
+ndist = 10;                              % nearest distance
+>>>>>>> Stashed changes:code/michel/SIMonkey.m
 flds = 1.5;                             % field size
 
 dom = 0.001*ones(gela,crcl);              % value of dominance
