@@ -4,7 +4,7 @@ clear all, clc                          % delete all data
 %% 1. inital conditions
 num_cycl = 200;                         % number of cycles
 num_gelas = 14;                         % number of baboons
-dt = 0.1;                               % plot updating time
+dt = 0.1;                               % pause between each individul/plot updating time
 
 xpos = rand(num_gelas,1);               % x-position
 ypos = rand(num_gelas,1);               % y-position
@@ -18,7 +18,10 @@ dom = 0.7*ones(num_gelas,1);            % value of dominance
 stepdom = 0.8;                          % multiplier for changing dominance
 dom_min = 0.001;                        % minimum of possible dominance
 anx = 0.5*ones(num_gelas,1);            % value of anxiety
-anx_inc = 0.1;                          % multiplier for changing anxiety
+anx_inc = 0.01;                         % percentual increas of anxiety after every activation
+anx_inc_Fight = 0.15;                   % total increase of anxiety after fight
+anx_dcr_grmr = 0.1;                     % total increase of anxiety after grooming another monkey;
+anx_dcr_grme = 0.1;                     % total increase of anxiety after being groomed by another monkey;
 anx_min = 0.001;                        % minimum of possible anxiety
 
 %% 2. auxiliary variables (Hilfsvariablen)
@@ -51,7 +54,6 @@ figure
 for n = 1:num_cycl                      % loop over cycles
     
     for i = 1:num_gelas                 % loop over baboons | i = "active baboon"
-       
         %% 4. position plot of all gelada by their number (live)
         subplot(1,3,1:2)
         plot(xpos(:),ypos(:),'.','Color','w')
@@ -84,6 +86,7 @@ for n = 1:num_cycl                      % loop over cycles
             % shall i fight or groom? (yes or no)
             if dom(i)/(dom(i)+dom(nearest_gela)) >= rand        %if true -> fight
                 %%  6.1.1 fight   
+                %Attack
                 if dom(i)/(dom(i)+dom(nearest_gela)) >= rand    %if true -> i = winner
                     % i = winner | o = loser
                     outcome(i) = 1;                            % outcome(i,n) = 1;          
@@ -146,9 +149,10 @@ for n = 1:num_cycl                      % loop over cycles
                 dom_avrg(i) = dom_sum(i)/n;          % average over n cycles
                 dom_sum(nearest_gela) = dom_sum(nearest_gela)+dom(nearest_gela);
                 dom_avrg(nearest_gela) = dom_sum(nearest_gela)/n;
+                
                 % anxiety grows anyway because of the fight
-                anx(i) = anx(i)+anx_inc;
-                anx(nearest_gela) = anx(nearest_gela)+anx_inc;
+                anx(i) = anx(i)+anx_inc_fight;
+                anx(nearest_gela) = anx(nearest_gela)+anx_inc_fight;
                 % set minimum of anxiety
                 anx(i) = setminof(anx(i),anx_min);
                 anx(nearest_gela) = setminof(anx(nearest_gela),anx_min);
@@ -174,8 +178,8 @@ for n = 1:num_cycl                      % loop over cycles
                         plotinteract(xpos(i),ypos(i),outcome(i),'bottom');
                         plotinteract(xpos(nearest_gela),ypos(nearest_gela),outcome(nearest_gela),'top');
                         % write new anxieties
-                        anx(i) = anx(i)-anx_inc;
-                        anx(nearest_gela) = anx(nearest_gela)-anx_inc*1.5;
+                        anx(i) = anx(i)-anx_dcr_grmr;
+                        anx(nearest_gela) = anx(nearest_gela)-anx_inc_grme;
                         % set minimum of anxiety
                         anx(i) = setminof(anx(i),anx_min);
                         anx(nearest_gela) = setminof(anx(nearest_gela),anx_min);
@@ -197,7 +201,7 @@ for n = 1:num_cycl                      % loop over cycles
                     outcome(i) = rand;
                     % plot interaction
                     plotinteract(xpos(i),ypos(i),outcome(i),'bottom');
-                    anx(i) = anx(i)+anx_inc/2;
+                    anx(i) = anx(i)+anx(i)*anx_inc;
                     % set minimum of anxiety
                     anx(i) = setminof(anx(i),anx_min);
                     % calculate average anxieties
@@ -213,6 +217,23 @@ for n = 1:num_cycl                      % loop over cycles
                 % move randomly
                 xpos(i) = move(xpos(i),2*mov_multip,field_size);
                 ypos(i) = move(ypos(i),2*mov_multip,field_size);
+                % plot interaction
+                plotinteract(xpos(i),ypos(i),outcome(i),'top');
+                % decrement dominance by not being active
+                dom(i) = dom(i)-stepdom/num_gelas;
+                % set minimum of dominance
+                dom(i) = setminof(dom(i),dom_min);
+                % calculate average dominances
+                dom_sum(i) = dom_sum(i)+dom(i);     % sum over n cycles
+                dom_avrg(i) = dom_sum(i)/n;          % average over n cycles
+                % increment anxiety by not being active
+                anx(i) = anx(i)+anx(i)*anx_inc;
+                % set minimum of anxiety
+                anx(i) = setminof(anx(i),anx_min);
+                % calculate average anxieties
+                anx_sum(i) = anx_sum(i)+anx(i);     % sum over n cycles
+                anx_avrg(i) = anx_sum(i)/n;          % average over n cycles
+                
             % do not do anything
             else
                 outcome(i) = rand;
@@ -226,14 +247,16 @@ for n = 1:num_cycl                      % loop over cycles
                 dom_sum(i) = dom_sum(i)+dom(i);     % sum over n cycles
                 dom_avrg(i) = dom_sum(i)/n;          % average over n cycles
                 % increment anxiety by not being active
-                anx(i) = anx(i)+anx_inc/2;
+                anx(i) = anx(i)+anx(i)*anx_inc;
                 % set minimum of anxiety
                 anx(i) = setminof(anx(i),anx_min);
                 % calculate average anxieties
                 anx_sum(i) = anx_sum(i)+anx(i);     % sum over n cycles
                 anx_avrg(i) = anx_sum(i)/n;          % average over n cycles
             end
-        end
+            
+            
+            end
         
         
         
