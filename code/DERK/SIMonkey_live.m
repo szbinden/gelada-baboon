@@ -19,7 +19,7 @@ stepdom = 0.8;                          % multiplier for changing dominance
 dom_min = 0.001;                        % minimum of possible dominance
 anx = 0.5*ones(num_gelas,1);            % value of anxiety
 anx_inc = 0.01;                         % percentual increas of anxiety after every activation
-anx_inc_Fight = 0.15;                   % total increase of anxiety after fight
+anx_inc_fight = 0.15;                   % total increase of anxiety after fight
 anx_dcr_grmr = 0.1;                     % total increase of anxiety after grooming another monkey;
 anx_dcr_grme = 0.1;                     % total increase of anxiety after being groomed by another monkey;
 anx_min = 0.001;                        % minimum of possible anxiety
@@ -36,10 +36,12 @@ noin = zeros(num_gelas,1);              % list of "no interactions"
 
 %outcome = rand((num_gelas+1)*num_gelas,num_cycl);           % interaction matrix
 
-outcome = rand(num_gelas,1);            % 0 - loser
+outcome = zeros(num_gelas,1);           % 0 - loser
                                         % 1 - winner
                                         % 2 - groomee
                                         % 3 - groomer
+                                        % 4 - searching
+                                        % 5 - resting
                                     
 dom_sum = zeros(num_gelas,1);           % sum of all dominances over n cycles
 dom_avrg = zeros(num_gelas,1);          % each individual's average of dominance
@@ -179,7 +181,7 @@ for n = 1:num_cycl                      % loop over cycles
                         plotinteract(xpos(nearest_gela),ypos(nearest_gela),outcome(nearest_gela),'top');
                         % write new anxieties
                         anx(i) = anx(i)-anx_dcr_grmr;
-                        anx(nearest_gela) = anx(nearest_gela)-anx_inc_grme;
+                        anx(nearest_gela) = anx(nearest_gela)-anx_dcr_grme;
                         % set minimum of anxiety
                         anx(i) = setminof(anx(i),anx_min);
                         anx(nearest_gela) = setminof(anx(nearest_gela),anx_min);
@@ -198,7 +200,7 @@ for n = 1:num_cycl                      % loop over cycles
                     
                 else
                     % 6.1.2 no grooming
-                    outcome(i) = rand;
+                    outcome(i) = 5;
                     % plot interaction
                     plotinteract(xpos(i),ypos(i),outcome(i),'bottom');
                     anx(i) = anx(i)+anx(i)*anx_inc;
@@ -214,6 +216,7 @@ for n = 1:num_cycl                      % loop over cycles
             %% 6.2 no interaction
             % do a random move
             if activity >= rand
+                outcome(i) = 4;
                 % move randomly
                 xpos(i) = move(xpos(i),2*mov_multip,field_size);
                 ypos(i) = move(ypos(i),2*mov_multip,field_size);
@@ -236,7 +239,7 @@ for n = 1:num_cycl                      % loop over cycles
                 
             % do not do anything
             else
-                outcome(i) = rand;
+                outcome(i) = 5;
                 % plot interaction
                 plotinteract(xpos(i),ypos(i),outcome(i),'top');
                 % decrement dominance by not being active
