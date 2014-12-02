@@ -20,6 +20,7 @@ rectangle('Position',[-spawning_size/2,-spawning_size/2,spawning_size,spawning_s
 %text(-0.6,-0.1,int2str(n));
 axis([-(field_size/2) (field_size/2) -(field_size/2) (field_size/2)]);                  % set field size
 text(xpos(:),ypos(:),int2str(gela_nr),'FontSize',14);
+
 %hold off;
 pause(1);
 plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,1,dt);

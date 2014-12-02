@@ -1,4 +1,4 @@
-function [  ] = plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest,interact_type,pause)
+function [  ] = plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest,interact_type)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -6,6 +6,11 @@ function [  ] = plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest,int
 subplot(1,3,1:2);
 plot(xpos(:),ypos(:),'.','Color','k');
 title('GELADA BABOON - PLAYGROUND');
+
+% Plot image as background
+%bg = imread('grassland.jpg'); 
+%imagesc(bg);
+
 grid on;
 rectangle('Position',[-spawning_size/2,-spawning_size/2,spawning_size,spawning_size]);
 %text(-0.6,-0.1,int2str(n));
@@ -44,6 +49,5 @@ else
 %do nothing
 end
 
-%pause(pause);
 end
 

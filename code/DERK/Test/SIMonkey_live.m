@@ -4,20 +4,21 @@ clear all, clc                          % delete all data
 %% 1. inital conditions
 %Simulation
 num_cycl = 200;                         % number of cycles
-dt = 1;                               % pause between each individul/plot updating time
+dt = 1;                                 % pause between each individul/plot updating time
 
 %World
 field_size = 2;                         % size of the world
 spawning_size = 1;                      % size of square where geladas are distributed at the beginning
 
 %Gelada Baboons
-num_gelas = 12;                          % number of baboons
+num_gelas = 3;                         % number of baboons
 xpos = spawning_size*rand(num_gelas,1)-(spawning_size/2);   % x-positions at the beginning
 ypos = spawning_size*rand(num_gelas,1)-(spawning_size/2);   % y-positions at the beginning
 view = 0.4;                             % baboon's field of vision
-interact_dist = 0.05;                   % distance between two interacting geladas
-flee_dist = 0.1;                       % fleeing_distance after losing fight
-mov_multip = 0.02;                      % multiplier for moving act
+interact_dist = 0.01;                   % distance between two interacting geladas
+flee_dist = 0.1;                        % fleeing_distance after losing fight
+mov_dist = 0.05;                         % distance of random movement if noone in sight
+%mov_multip = 0.02;                     % multiplier for moving act
 %flee_multip = 0.2;                     % multiplier for fleeing act
 %activity = 0.8;                        % baboon's activity
 dom = 0.7*ones(num_gelas,1);            % value of dominance
@@ -62,7 +63,9 @@ anx_avrg = zeros(num_gelas,1);          % each individual's average of anxiety
 
 %% 3. loop             
 for n = 1:num_cycl                      % loop over cycles
-    plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,0,dt);
+    
+        plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,0);
+        pause(dt);
     
         for i = 1:num_gelas                 % loop over baboons | i = "active baboon"
         
@@ -102,13 +105,15 @@ for n = 1:num_cycl                      % loop over cycles
             if dom(i)/(dom(i)+dom(nearest_gela)) >= rand        %if true -> fight
                 
                 %%  6.1.1 fight
-                plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,1,dt);
+                plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,1);
+                pause(dt);
                 % 'i' moves to neighbour up to 'interact_dist'
                 xpos(i) = x_move_to_individual(xpos(i),ypos(i),xpos(nearest_gela),ypos(nearest_gela),interact_dist);
                 ypos(i) = y_move_to_individual(xpos(i),ypos(i),xpos(nearest_gela),ypos(nearest_gela),interact_dist);
 
                 % Plot interaction
-                plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,1,dt);
+                plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,1);
+                pause(1);
                 %plotinteract2(i, xpos(i),ypos(i),0,'middle');
                 %plotinteract2(nearest_gela, xpos(nearest_gela),ypos(nearest_gela),0,'middle');
                 
@@ -132,7 +137,8 @@ for n = 1:num_cycl                      % loop over cycles
                     dom(nearest_gela) = dom(nearest_gela)-(outcome(i)-(dom(nearest_gela)/(dom(i)+dom(nearest_gela))))*stepdom;
                     
                     % Plot outcome
-                    plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,2,dt);
+                    plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,2);
+                    pause(dt);
                     %plotinteract2(i, xpos(i),ypos(i),outcome(i));
                     %plotinteract2(nearest_gela, xpos(nearest_gela),ypos(nearest_gela),outcome(nearest_gela));
                     
@@ -166,7 +172,8 @@ for n = 1:num_cycl                      % loop over cycles
                     dom(nearest_gela) = dom(nearest_gela)+(outcome(i)-(dom(nearest_gela)/(dom(i)+dom(nearest_gela))))*stepdom;
                     
                     % plot outcome
-                    plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,3,dt);
+                    plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,3);
+                    pause(dt);
                     %plotinteract2(i,xpos(i),ypos(i),outcome(i),'bottom');
                     %plotinteract2(nearest_gela,xpos(nearest_gela),ypos(nearest_gela),outcome(nearest_gela),'top');
                     
@@ -220,7 +227,8 @@ for n = 1:num_cycl                      % loop over cycles
                         % Groom (i = groomer | nearest_gela = groomee)
                         
                         % Plot interaction
-                        plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,1,dt);
+                        plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,1);
+                        pause(dt);
                         %plotinteract2(i, xpos(i),ypos(i),0,'middle');
                         %plotinteract2(nearest_gela, xpos(nearest_gela),ypos(nearest_gela),0,'middle');
                         
@@ -254,7 +262,8 @@ for n = 1:num_cycl                      % loop over cycles
                         anx_avrg(nearest_gela) = anx_sum(nearest_gela)/n;
 
                         % plot interactions
-                        plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,4,dt);
+                        plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,4);
+                        pause(dt);
                         %plotinteract2(i,xpos(i),ypos(i),outcome(i),'bottom');
                         %plotinteract2(nearest_gela,xpos(nearest_gela),ypos(nearest_gela),outcome(nearest_gela),'top');
                         
@@ -271,7 +280,8 @@ for n = 1:num_cycl                      % loop over cycles
                     outcome(i) = 6;
                     
                     % plot interaction
-                    %plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,1,dt);
+                    %plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,1);
+                    %pause(dt);
                     %plotinteract2(i,xpos(i),ypos(i),outcome(i),'bottom');
                     
                     % calculate average anxieties
@@ -286,10 +296,16 @@ for n = 1:num_cycl                      % loop over cycles
             
             %if activity >= rand
                 
-                plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,5,dt);
+                plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,5);
+                pause(dt);
+                
                 % move randomly
-                xpos(i) = move(xpos(i),2*mov_multip,field_size);
-                ypos(i) = move(ypos(i),2*mov_multip,field_size);
+                rnd_direction = rand;
+                xpos(i) = x_move_away_random(xpos(i),mov_dist,rnd_direction);
+                ypos(i) = y_move_away_random(ypos(i),mov_dist,rnd_direction);
+                %xpos(i) = move(xpos(i),2*mov_multip,field_size);
+                %ypos(i) = move(ypos(i),2*mov_multip,field_size);
+                
                 % decrement dominance by not being active
                 dom(i) = dom(i)-stepdom/num_gelas;
                 % set minimum of dominance
@@ -306,7 +322,8 @@ for n = 1:num_cycl                      % loop over cycles
                 %anx_avrg(i) = anx_sum(i)/n;          % average over n cycles
 
                 % Plot interaction
-                plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,5,dt);
+                plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,5);
+                pause(dt);
                 %plotinteract2(i,xpos(i),ypos(i),outcome(i),'top');
                 
             % do not do anything
