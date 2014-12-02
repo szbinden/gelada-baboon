@@ -10,7 +10,7 @@ ypos = rand(num_gelas,1);               % y-position
 mov_multip = 0.02;                      % multiplier for moving act
 flee_multip = 0.2;                      % multiplier for fleeing act
 view = 0.4;                             % baboon's field of vision
-%activity = 0.8;                         % baboon's activity
+activity = 0.8;                         % baboon's activity
 field_size = 1.5;                       % field size
 
 dom = 0.7*ones(num_gelas,1);            % value of dominance
@@ -215,7 +215,7 @@ for n = 1:num_cycl                      % loop over cycles
         else
             %% 6.2 no interaction
             % do a random move
-            %if activity >= rand
+            if activity >= rand
                 outcome(i) = 4;
                 % move randomly
                 xpos(i) = move(xpos(i),2*mov_multip,field_size);
@@ -238,28 +238,28 @@ for n = 1:num_cycl                      % loop over cycles
                 anx_avrg(i) = anx_sum(i)/n;          % average over n cycles
                 
             % do not do anything
-            %else
-            %    outcome(i) = 5;
-            %    % plot interaction
-            %    plotinteract(xpos(i),ypos(i),outcome(i),'top');
-            %    % decrement dominance by not being active
-            %    dom(i) = dom(i)-stepdom/num_gelas;
-            %    % set minimum of dominance
-            %    dom(i) = setminof(dom(i),dom_min);
-            %    % calculate average dominances
-            %    dom_sum(i) = dom_sum(i)+dom(i);     % sum over n cycles
-            %    dom_avrg(i) = dom_sum(i)/n;          % average over n cycles
-            %    % increment anxiety by not being active
-            %    anx(i) = anx(i)+anx(i)*anx_inc;
-            %    % set minimum of anxiety
-            %    anx(i) = setminof(anx(i),anx_min);
-            %    % calculate average anxieties
-            %    anx_sum(i) = anx_sum(i)+anx(i);     % sum over n cycles
-            %    anx_avrg(i) = anx_sum(i)/n;          % average over n cycles
-        %end
+            else
+                outcome(i) = 5;
+                % plot interaction
+                plotinteract(xpos(i),ypos(i),outcome(i),'top');
+                % decrement dominance by not being active
+                dom(i) = dom(i)-stepdom/num_gelas;
+                % set minimum of dominance
+                dom(i) = setminof(dom(i),dom_min);
+                % calculate average dominances
+                dom_sum(i) = dom_sum(i)+dom(i);     % sum over n cycles
+                dom_avrg(i) = dom_sum(i)/n;          % average over n cycles
+                % increment anxiety by not being active
+                anx(i) = anx(i)+anx(i)*anx_inc;
+                % set minimum of anxiety
+                anx(i) = setminof(anx(i),anx_min);
+                % calculate average anxieties
+                anx_sum(i) = anx_sum(i)+anx(i);     % sum over n cycles
+                anx_avrg(i) = anx_sum(i)/n;          % average over n cycles
+            end
             
             
-end
+            end
         
         
         

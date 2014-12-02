@@ -1,6 +1,8 @@
 function [  ] = plotinteract( x,y,a,p )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
+
+% set found individual to nearest baboon
 % defeated
 if a == 0
     text(x, y, 'D', 'VerticalAlignment',p, 'HorizontalAlignment','right','Color','r','FontWeight','bold','FontSize',14)
