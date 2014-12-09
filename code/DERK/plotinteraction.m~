@@ -4,46 +4,58 @@ function [  ] = plotinteraction(xpos,ypos,spawning_size,field_size,gela_nr,i,nea
 
 % Plot whole Playground
 subplot(1,3,1:2);
-plot(xpos(:),ypos(:),'.','Color','w');
-text(xpos(:),ypos(:),int2str(gela_nr),'Color','k','FontWeight','bold','FontSize',14);
+plot(xpos(:),ypos(:),'.','MarkerSize',20,'Color','k');
+text(xpos(:),ypos(:),num2str(gela_nr),'Color','k','FontSize',14);           %'FontWeight','bold',
 title('GELADA BABOON - PLAYGROUND');
 grid on;
 %bg = imread('grassland.jpg');  % Plot image as background
 %imagesc(bg);
 rectangle('Position',[-spawning_size/2,-spawning_size/2,spawning_size,spawning_size]);
-%text(-fiel,-0.1,int2str(n));
+%text(-field_size,-0.1,int2str(n));
 axis([-(field_size/2) (field_size/2) -(field_size/2) (field_size/2)]);  % set field size
 %hold off;
 
 %Mark interacting Geladas with color
 % interacting
 if interact_type == 0
-    text(xpos(i), ypos(i), num2str(i),'Color','y','FontWeight','bold','FontSize',14)
-    text(xpos(nearest), ypos(nearest), num2str(nearest),'Color','y','FontWeight','bold','FontSize',14)
+    hold on;
+    plot(xpos(i), ypos(i),'.','Color','y');
+    plot(xpos(nearest), ypos(nearest),'.','Color','y');
+    hold off;
 
 % i wins, nearest_gelada looses
 elseif interact_type == 1
-    text(xpos(i), ypos(i), num2str(i),'Color','g','FontWeight','bold','FontSize',14)
-    text(xpos(nearest), ypos(nearest), num2str(nearest),'Color','r','FontWeight','bold','FontSize',14)
+    hold on;
+    plot(xpos(i), ypos(i),'.','Color','g');
+    plot(xpos(nearest), ypos(nearest),'.','Color','r');
+    hold off;
 
 % nearest wins, i looses
 elseif interact_type == 2
-    text(xpos(i), ypos(i), num2str(i),'Color','r','FontWeight','bold','FontSize',14)
-    text(xpos(nearest), ypos(nearest), num2str(nearest),'Color','g','FontWeight','bold','FontSize',14)
+    hold on;
+    plot(xpos(i), ypos(i),'.','Color','r');
+    plot(xpos(nearest), ypos(nearest),'.','Color','g');
+    hold off;
 
 % i grooms nearest
 elseif interact_type == 3
-    text(xpos(i), ypos(i), num2str(i),'Color','m','FontWeight','bold','FontSize',14)
-    text(xpos(nearest), ypos(nearest), num2str(nearest),'Color','b','FontWeight','bold','FontSize',14)
+    hold on;
+    plot(xpos(i), ypos(i),'.','Color','m');
+    plot(xpos(nearest), ypos(nearest),'.','Color','c');
+    hold off;
 
 % nearest grooms i
 elseif interact_type == 4
-    text(xpos(i), ypos(i), num2str(i),'Color','m','FontWeight','bold','FontSize',14)
-    text(xpos(nearest), ypos(nearest), num2str(nearest),'Color','b','FontWeight','bold','FontSize',14)
+    hold on;
+    plot(xpos(i), ypos(i),'.','Color','c');
+    plot(xpos(nearest), ypos(nearest),'.','Color','m');
+    hold off;
     
 % doing a random walk
 elseif interact_type == 5
-    text(xpos(i), ypos(i), num2str(i),'Color','c','FontWeight','bold','FontSize',14)
+    hold on;
+    plot(xpos(i), ypos(i),'.','Color','b');
+    hold off;
 
 else
 %do nothing

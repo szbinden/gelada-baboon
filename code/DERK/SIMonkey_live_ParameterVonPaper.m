@@ -14,10 +14,10 @@ spawning_size = 30;                     % size of square where geladas are distr
 num_gelas = 12;                         % number of baboons
 xpos = spawning_size*rand(num_gelas,1)-(spawning_size/2);   % x-positions at the beginning (random, within 'spawning square')
 ypos = spawning_size*rand(num_gelas,1)-(spawning_size/2);   % y-positions at the beginning (random, within 'spawning square')
-persspace = 8;                        % a baboons close encounter distance (interaction only happens if other baboon is within this distance)
-view = 50;                               % a baboons viewing distance
+persspace = 8;                          % a baboons close encounter distance (interaction only happens if other baboon is within this distance)
+view = 50;                              % a baboons viewing distance
 interact_dist = 1;                    % distance between two geladas when they interact (upon interaction they approach each other to this distance)
-flee_dist = 2;                        % fleeing_distance after losing fight
+flee_dist = 3;                        % fleeing_distance after losing fight
 mov_dist = 1;                         % distance of random movement if no one in sight
 %mov_multip = 0.02;                     % multiplier for moving act
 %flee_multip = 0.2;                     % multiplier for fleeing act
@@ -198,7 +198,7 @@ for n = 1:num_cycl
                         
                         % plot interactions
                         plotinteraction(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,outcome(i));
-                        pause(dt);
+                        pause(2*dt);
                         %plotinteract2(i,xpos(i),ypos(i),outcome(i),'bottom');
                         %plotinteract2(nearest_gela,xpos(nearest_gela),ypos(nearest_gela),outcome(nearest_gela),'top');
                         
