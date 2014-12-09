@@ -4,8 +4,8 @@ function [  ] = plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest)
 
 % Plot whole Playground
 subplot(1,3,1:2);
-plot(xpos(:),ypos(:),'.','Color','w');
-text(xpos(:),ypos(:),int2str(gela_nr),'Color','k','FontWeight','bold','FontSize',14);
+plot(xpos(:),ypos(:),'.','MarkerSize',40,'Color','k');
+text(xpos(:),ypos(:),num2str(gela_nr),'VerticalAlignment','bottom', 'HorizontalAlignment','left','Color','k','FontSize',14);           %'FontWeight','bold',
 title('GELADA BABOON - PLAYGROUND');
 grid on;
 %bg = imread('grassland.jpg');  % Plot image as background

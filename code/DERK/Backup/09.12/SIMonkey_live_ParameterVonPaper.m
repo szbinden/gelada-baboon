@@ -14,10 +14,10 @@ spawning_size = 30;                     % size of square where geladas are distr
 num_gelas = 12;                         % number of baboons
 xpos = spawning_size*rand(num_gelas,1)-(spawning_size/2);   % x-positions at the beginning (random, within 'spawning square')
 ypos = spawning_size*rand(num_gelas,1)-(spawning_size/2);   % y-positions at the beginning (random, within 'spawning square')
-persspace = 8;                        % a baboons close encounter distance (interaction only happens if other baboon is within this distance)
-view = 50;                               % a baboons viewing distance
+perspace = 8;                           % a baboons close encounter distance (interaction only happens if other baboon is within this distance)
+view = 50;                              % a baboons viewing distance
 interact_dist = 1;                    % distance between two geladas when they interact (upon interaction they approach each other to this distance)
-flee_dist = 2;                        % fleeing_distance after losing fight
+flee_dist = 3;                        % fleeing_distance after losing fight
 mov_dist = 1;                         % distance of random movement if no one in sight
 %mov_multip = 0.02;                     % multiplier for moving act
 %flee_multip = 0.2;                     % multiplier for fleeing act
@@ -79,8 +79,8 @@ for n = 1:num_cycl
         nearest_gela = 0;
         % scan over all baboons
         for j = 1:num_gelas             
-        % find individual that is: within my view & nearer to me than the others & not me &  I did not interact with in the last round                                   
-            if (norm([xpos(i),ypos(i)]-[xpos(j),ypos(j)]) < nearest_dist) && (norm([xpos(i),ypos(i)]-[xpos(j),ypos(j)]) < view) && (j ~= i) && (just_interacted(i) ~= j) && (just_interacted(j) ~= i);
+        % find individual that is: within my view & nearer to me than the others  & not me &  I did not interact with in the last round                                   
+            if (dist(xpos,ypos,i,j) < view && dist(xpos,ypos,i,j) < nearest_dist && (j ~= i) && (just_interacted(i) ~= j) && (just_interacted(j) ~= i))
                 nearest_gela = j;   % set found individual to nearest baboon
                 nearest_dist = norm([xpos(i),ypos(i)]-[xpos(j),ypos(j)]);   % set distance to found individual to new 'nearest distance'
             end
@@ -89,159 +89,163 @@ for n = 1:num_cycl
 
         % If a partner was found, interactions starts (6.1), else no interaction happens (6.2)
         if (nearest_gela ~= 0)
-            %% 6.1 interaction
-            
-            % Statistics
-            partn(i,nearest_gela) = partn(i,nearest_gela)+1;    % list partners
-            
-            % shall i fight or groom? If following condition is true -> fight (chances of winning are estimated on the basis of the strengths (dom values))
-            if (dom(i)/(dom(i)+dom(nearest_gela)) >= rand)    
+            if (nearest_dist <= perspace)
+                %% 6.1 interaction
                 
-                %%  6.1.1 fight
-                % 'i' moves to neighbour up to 'interact_dist'
-                xpos(i) = x_move_to_individual(xpos(i),ypos(i),xpos(nearest_gela),ypos(nearest_gela),interact_dist);
-                ypos(i) = y_move_to_individual(xpos(i),ypos(i),xpos(nearest_gela),ypos(nearest_gela),interact_dist);
-
-                % Plot interaction
-                plotinteraction(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,0);
-                pause(dt);
-                %plotinteract2(i, xpos(i),ypos(i),0,'middle');
-                %plotinteract2(nearest_gela, xpos(nearest_gela),ypos(nearest_gela),0,'middle');
+                % Statistics
+                partn(i,nearest_gela) = partn(i,nearest_gela)+1;    % list partners
                 
-                % Attack
-                if dom(i)/(dom(i)+dom(nearest_gela)) >= rand    % if true -> i = winner
-                    % i = winner | nearest_gelada = loser
-                    outcome(i) = 1;                             % outcome(i,n) = 1;          
-                    %outcome(nearest_gela) = 2;                  % outcome(o+i*num_gelas,n) = 0;
-                    winner = i;
-                    loser = nearest_gela;
+                % shall i fight or groom? If following condition is true -> fight (chances of winning are estimated on the basis of the strengths (dom values))
+                if (dom(i)/(dom(i)+dom(nearest_gela)) >= rand)
                     
-                else 
-                    % i = loser | nearest_gela = winner
-                    outcome(i) = 2;
-                    winner = nearest_gela;
-                    loser = i;
-                end
+                    %%  6.1.1 fight
+                    % 'i' moves to neighbour up to 'interact_dist'
+                    xpos(i) = x_move_to_individual(xpos(i),ypos(i),xpos(nearest_gela),ypos(nearest_gela),interact_dist);
+                    ypos(i) = y_move_to_individual(xpos(i),ypos(i),xpos(nearest_gela),ypos(nearest_gela),interact_dist);
                     
-                % plot outcome
-                plotinteraction(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,outcome(i));
-                pause(dt);
+                    % Plot interaction
+                    plotinteraction(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,0);
+                    pause(dt);
+                    %plotinteract2(i, xpos(i),ypos(i),0,'middle');
+                    %plotinteract2(nearest_gela, xpos(nearest_gela),ypos(nearest_gela),0,'middle');
                     
-                % -> winner stays, loser flees in random direction
-                rnd_direction = rand;
-                xpos(loser) = move_away_random(xpos(loser),flee_dist,cos(2*pi*rnd_direction));
-                ypos(loser) = move_away_random(ypos(loser),flee_dist,sin(2*pi*rnd_direction));  
-                
-                % plot
-                plotinteraction(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,outcome(i));
-                pause(dt);
-                %plotinteract2(i, xpos(i),ypos(i),outcome(i));
-                %plotinteract2(nearest_gela, xpos(nearest_gela),ypos(nearest_gela),outcome(nearest_gela));
-
-                % Statistics (increment victories/defeats)
-                vict(winner) = vict(winner)+1;
-                defe(loser) = defe(loser)+1;
-                    
-                % Write new dominances
-                stepdom = rand;     % represents intensity of interaction
-                dom(winner) = dom(winner)+(outcome(i)-(dom(winner)/(dom(winner)+dom(loser))))*stepdom;
-                dom(loser) = dom(loser)-(outcome(i)-(dom(loser)/(dom(winner)+dom(loser))))*stepdom;
-                 
-                % anxiety of both geladas grows because of the fight
-                anx(i) = anx(i)+anx_inc_fight;
-                anx(nearest_gela) = anx(nearest_gela)+anx_inc_fight;
-                % set minimum of anxiety
-                anx(i) = setminof(anx(i),anx_min);
-                anx(nearest_gela) = setminof(anx(nearest_gela),anx_min);
-
-                % set minimum of dominance
-                dom(i) = setminof(dom(i),dom_min);
-                dom(nearest_gela) = setminof(dom(nearest_gela),dom_min);
-                
-                % gelada i remembers whith whom he just interacted
-                just_interacted(i) = nearest_gela;
-                
-                %Statistics
-                % calculate average dominances
-                dom_sum(i) = dom_sum(i)+dom(i);     % sum over n cycles
-                dom_avrg(i) = dom_sum(i)/n;          % average over n cycles
-                dom_sum(nearest_gela) = dom_sum(nearest_gela)+dom(nearest_gela);
-                dom_avrg(nearest_gela) = dom_sum(nearest_gela)/n;
-                % calculate average anxieties
-                anx_sum(i) = anx_sum(i)+anx(i);     % sum over n cycles
-                anx_avrg(i) = anx_sum(i)/n;          % average over n cycles
-                anx_sum(nearest_gela) = anx_sum(nearest_gela)+anx(nearest_gela);     
-                anx_avrg(nearest_gela) = anx_sum(nearest_gela)/n;
-
-            else
-                % 6.1.1 no fight
-                % shall i groom? (yes or no)
-                if anx(i) >= rand
-                    %% 6.1.2 grooming
-                    % only groom if own dominance is lower than the other one's is
-                    if dom(i) <= dom(nearest_gela)
-                        % Groom (i = groomer | nearest_gela = groomee)
-                        outcome(i) = 4;
-                        outcome(nearest_gela) = 3;
+                    % Attack
+                    if dom(i)/(dom(i)+dom(nearest_gela)) >= rand    % if true -> i = winner
+                        % i = winner | nearest_gelada = loser
+                        outcome(i) = 1;                             % outcome(i,n) = 1;
+                        %outcome(nearest_gela) = 2;                  % outcome(o+i*num_gelas,n) = 0;
+                        winner = i;
+                        loser = nearest_gela;
                         
-                        % plot interaction
-                        plotinteraction(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,0);
-                        pause(dt);
-                        %plotinteract2(i, xpos(i),ypos(i),0,'middle');
-                        %plotinteract2(nearest_gela, xpos(nearest_gela),ypos(nearest_gela),0,'middle');
+                    else
+                        % i = loser | nearest_gela = winner
+                        outcome(i) = 2;
+                        winner = nearest_gela;
+                        loser = i;
+                    end
+                    
+                    % plot outcome
+                    plotinteraction(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,outcome(i));
+                    pause(dt);
+                    
+                    % -> winner stays, loser flees in random direction
+                    rnd_direction = rand;
+                    xpos(loser) = move_away_random(xpos(loser),flee_dist,cos(2*pi*rnd_direction));
+                    ypos(loser) = move_away_random(ypos(loser),flee_dist,sin(2*pi*rnd_direction));
+                    
+                    % plot
+                    plotinteraction(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,outcome(i));
+                    pause(dt);
+                    %plotinteract2(i, xpos(i),ypos(i),outcome(i));
+                    %plotinteract2(nearest_gela, xpos(nearest_gela),ypos(nearest_gela),outcome(nearest_gela));
+                    
+                    % Statistics (increment victories/defeats)
+                    vict(winner) = vict(winner)+1;
+                    defe(loser) = defe(loser)+1;
+                    
+                    % Write new dominances
+                    stepdom = rand;     % represents intensity of interaction
+                    dom(winner) = dom(winner)+(outcome(i)-(dom(winner)/(dom(winner)+dom(loser))))*stepdom;
+                    dom(loser) = dom(loser)-(outcome(i)-(dom(loser)/(dom(winner)+dom(loser))))*stepdom;
+                    
+                    % anxiety of both geladas grows because of the fight
+                    anx(i) = anx(i)+anx_inc_fight;
+                    anx(nearest_gela) = anx(nearest_gela)+anx_inc_fight;
+                    % set minimum of anxiety
+                    anx(i) = setminof(anx(i),anx_min);
+                    anx(nearest_gela) = setminof(anx(nearest_gela),anx_min);
+                    
+                    % set minimum of dominance
+                    dom(i) = setminof(dom(i),dom_min);
+                    dom(nearest_gela) = setminof(dom(nearest_gela),dom_min);
+                    
+                    % gelada i remembers whith whom he just interacted
+                    just_interacted(i) = nearest_gela;
+                    
+                    %Statistics
+                    % calculate average dominances
+                    dom_sum(i) = dom_sum(i)+dom(i);     % sum over n cycles
+                    dom_avrg(i) = dom_sum(i)/n;          % average over n cycles
+                    dom_sum(nearest_gela) = dom_sum(nearest_gela)+dom(nearest_gela);
+                    dom_avrg(nearest_gela) = dom_sum(nearest_gela)/n;
+                    % calculate average anxieties
+                    anx_sum(i) = anx_sum(i)+anx(i);     % sum over n cycles
+                    anx_avrg(i) = anx_sum(i)/n;          % average over n cycles
+                    anx_sum(nearest_gela) = anx_sum(nearest_gela)+anx(nearest_gela);
+                    anx_avrg(nearest_gela) = anx_sum(nearest_gela)/n;
+                    
+                else
+                    % 6.1.1 no fight
+                    % shall i groom? (yes or no)
+                    if anx(i) >= rand
+                        %% 6.1.2 grooming
+                        % only groom if own dominance is lower than the other one's is
+                        if dom(i) <= dom(nearest_gela)
+                            % Groom (i = groomer | nearest_gela = groomee)
+                            outcome(i) = 4;
+                            outcome(nearest_gela) = 3;
+                            
+                            % plot interaction
+                            plotinteraction(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,0);
+                            pause(dt);
+                            %plotinteract2(i, xpos(i),ypos(i),0,'middle');
+                            %plotinteract2(nearest_gela, xpos(nearest_gela),ypos(nearest_gela),0,'middle');
+                            
+                            % groomer moves next to groomee
+                            xpos(i) = x_move_to_individual(xpos(i),ypos(i),xpos(nearest_gela),ypos(nearest_gela),interact_dist);
+                            ypos(i) = y_move_to_individual(xpos(i),ypos(i),xpos(nearest_gela),ypos(nearest_gela),interact_dist);
+                            %xpos(i) = move(xpos(nearest_gela),0.03,field_size);
+                            %ypos(i) = move(ypos(nearest_gela),0.03,field_size);
+                            
+                            % plot interactions
+                            plotinteraction(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,outcome(i));
+                            pause(2*dt);
+                            %plotinteract2(i,xpos(i),ypos(i),outcome(i),'bottom');
+                            %plotinteract2(nearest_gela,xpos(nearest_gela),ypos(nearest_gela),outcome(nearest_gela),'top');
+                            
+                            % write new anxieties
+                            anx(i) = anx(i)-anx_dcr_grmr;
+                            anx(nearest_gela) = anx(nearest_gela)-anx_dcr_grme;
+                            % set minimum of anxiety
+                            anx(i) = setminof(anx(i),anx_min);
+                            anx(nearest_gela) = setminof(anx(nearest_gela),anx_min);
+                            
+                            %Gelada i remembers whith whom he just interacted
+                            just_interacted(i) = nearest_gela;
+                            
+                            % Statistics
+                            % increment groomer/groomee
+                            grmr(i) = grmr(i)+1;
+                            grme(nearest_gela) = grme(nearest_gela)+1;
+                            % calculate average anxieties
+                            %anx_sum(i) = anx_sum(i)+anx(i);     % sum over n cycles
+                            %anx_avrg(i) = anx_sum(i)/n;          % average over n cycles
+                            anx_sum(nearest_gela) = anx_sum(nearest_gela)+anx(nearest_gela);
+                            anx_avrg(nearest_gela) = anx_sum(nearest_gela)/n;
+                            
+                        else
+                            % the other one is higher rank
+                            % no changes need to be done
+                        end
                         
-                        % groomer moves next to groomee
-                        xpos(i) = x_move_to_individual(xpos(i),ypos(i),xpos(nearest_gela),ypos(nearest_gela),interact_dist);
-                        ypos(i) = y_move_to_individual(xpos(i),ypos(i),xpos(nearest_gela),ypos(nearest_gela),interact_dist);
-                        %xpos(i) = move(xpos(nearest_gela),0.03,field_size);
-                        %ypos(i) = move(ypos(nearest_gela),0.03,field_size);
+                    else
+                        % 6.1.2 no grooming
+                        % i doesn't move
+                        outcome(i) = 6;
                         
-                        % plot interactions
-                        plotinteraction(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,outcome(i));
-                        pause(dt);
+                        %plot interaction
+                        %plotinteraction(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,1);
+                        %pause(dt);
                         %plotinteract2(i,xpos(i),ypos(i),outcome(i),'bottom');
-                        %plotinteract2(nearest_gela,xpos(nearest_gela),ypos(nearest_gela),outcome(nearest_gela),'top');
                         
-                        % write new anxieties
-                        anx(i) = anx(i)-anx_dcr_grmr;
-                        anx(nearest_gela) = anx(nearest_gela)-anx_dcr_grme;
-                        % set minimum of anxiety
-                        anx(i) = setminof(anx(i),anx_min);
-                        anx(nearest_gela) = setminof(anx(nearest_gela),anx_min);
-                        
-                        %Gelada i remembers whith whom he just interacted
-                        just_interacted(i) = nearest_gela;
-                        
-                        % Statistics
-                        % increment groomer/groomee
-                        grmr(i) = grmr(i)+1;
-                        grme(nearest_gela) = grme(nearest_gela)+1;
+                        %Statistics
                         % calculate average anxieties
                         %anx_sum(i) = anx_sum(i)+anx(i);     % sum over n cycles
                         %anx_avrg(i) = anx_sum(i)/n;          % average over n cycles
-                        anx_sum(nearest_gela) = anx_sum(nearest_gela)+anx(nearest_gela);     
-                        anx_avrg(nearest_gela) = anx_sum(nearest_gela)/n; 
-
-                    else
-                        % the other one is higher rank
-                        % no changes need to be done
+                        
                     end
-                    
                 else
-                    % 6.1.2 no grooming
-                    % i doesn't move
-                    outcome(i) = 6;
-                    
-                    %plot interaction
-                    %plotinteraction(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,1);
-                    %pause(dt);
-                    %plotinteract2(i,xpos(i),ypos(i),outcome(i),'bottom');
-                    
-                    %Statistics
-                    % calculate average anxieties
-                    %anx_sum(i) = anx_sum(i)+anx(i);     % sum over n cycles
-                    %anx_avrg(i) = anx_sum(i)/n;          % average over n cycles
-            
+                    % move towards the found individual
                 end
             end
         else
