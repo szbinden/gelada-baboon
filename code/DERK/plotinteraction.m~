@@ -11,7 +11,7 @@ grid on;
 %bg = imread('grassland.jpg');  % Plot image as background
 %imagesc(bg);
 rectangle('Position',[-spawning_size/2,-spawning_size/2,spawning_size,spawning_size]);
-%text(-field_size,-0.1,int2str(n));
+%text(-fiel,-0.1,int2str(n));
 axis([-(field_size/2) (field_size/2) -(field_size/2) (field_size/2)]);  % set field size
 %hold off;
 

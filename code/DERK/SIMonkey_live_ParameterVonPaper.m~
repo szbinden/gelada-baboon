@@ -97,7 +97,7 @@ for n = 1:num_cycl
             % shall i fight or groom? If following condition is true -> fight (chances of winning are estimated on the basis of the strengths (dom values))
             if (dom(i)/(dom(i)+dom(nearest_gela)) >= rand)    
                 
-                %%  6.1.1 fight
+                %%  6.1.1 figh
                 % 'i' moves to neighbour up to 'interact_dist'
                 xpos(i) = x_move_to_individual(xpos(i),ypos(i),xpos(nearest_gela),ypos(nearest_gela),interact_dist);
                 ypos(i) = y_move_to_individual(xpos(i),ypos(i),xpos(nearest_gela),ypos(nearest_gela),interact_dist);
