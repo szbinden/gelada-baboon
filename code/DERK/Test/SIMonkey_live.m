@@ -3,21 +3,21 @@ clear all, clc                          % delete all data
 
 %% 1. inital conditions
 %Simulation
-num_cycl = 200;                         % number of cycles
-dt = 1;                                 % pause between each individul/plot updating time
+fast_mode = 1;
+num_cycl = 20;                          % number of cycles
 
 %World
 field_size = 2;                         % size of the world
-spawning_size = 1;                      % size of square where geladas are distributed at the beginning
+spawning_size = 1.5;                    % size of square where geladas are distributed at the beginning
 
 %Gelada Baboons
-num_gelas = 3;                         % number of baboons
+num_gelas = 12;                         % number of baboons
 xpos = spawning_size*rand(num_gelas,1)-(spawning_size/2);   % x-positions at the beginning
 ypos = spawning_size*rand(num_gelas,1)-(spawning_size/2);   % y-positions at the beginning
 view = 0.4;                             % baboon's field of vision
-interact_dist = 0.01;                   % distance between two interacting geladas
-flee_dist = 0.1;                        % fleeing_distance after losing fight
-mov_dist = 0.05;                         % distance of random movement if noone in sight
+interact_dist = 0.1;                    % distance between two interacting geladas
+flee_dist = 0.2;                        % fleeing_distance after losing fight
+mov_dist = 0.1;                         % distance of random movement if noone in sight
 %mov_multip = 0.02;                     % multiplier for moving act
 %flee_multip = 0.2;                     % multiplier for fleeing act
 %activity = 0.8;                        % baboon's activity
@@ -36,13 +36,20 @@ just_interacted = zeros(num_gelas,1);
 %% 2. auxiliary variables (Hilfsvariablen)
 gela_nr = (1:num_gelas)';               % baboon numbering
 nearest_gela = 0;                       % nearest OTHER baboon
-partn = zeros(num_gelas,num_cycl);      % list of interaction partners
+
+if (fast_mode)                          % pause between each individul/plot updating time
+    dt = 0;
+else
+    dt = 0.1;                          
+end
+
+%Statistics
+partn = zeros(num_gelas);      % list of interaction partners
 vict = zeros(num_gelas,1);              % list of victories fights per baboon
 defe = zeros(num_gelas,1);              % list of defeats fights per baboon
 grmr = zeros(num_gelas,1);              % list of "groomed" per baboon
 grme = zeros(num_gelas,1);              % list of "was groomed" per baboon
 noin = zeros(num_gelas,1);              % list of "no interactions"
-
 %outcome = rand((num_gelas+1)*num_gelas,num_cycl);           % interaction matrix
 outcome = zeros(num_gelas,1);           % 1 - winner
                                         % 2 - loser
@@ -69,6 +76,7 @@ for n = 1:num_cycl                      % loop over cycles
     
         for i = 1:num_gelas                 % loop over baboons | i = "active baboon"
         
+        rnd_direction = rand;               % define random variable for future interactions (fleeing and seeking)
         %% 4. position plot of all gelada by their number (live)
         %subplot(1,3,1:2);
         %plot(xpos(:),ypos(:),'.','Color','k');
@@ -81,8 +89,9 @@ for n = 1:num_cycl                      % loop over cycles
         %hold off;
 
         %% 5. find individual for interaction
-        nearest_dist = field_size*1000;
+        nearest_dist = view;
         % scan over baboons
+        nearest_gela = 0;
         for j = 1:num_gelas             
         % find individual that is: not me & nearer to me than the others & I did not interact with the last round                                   
             if (j ~= i) && (norm([xpos(i),ypos(i)]-[xpos(j),ypos(j)]) < nearest_dist) && (just_interacted(i) ~= j);                               
@@ -93,8 +102,9 @@ for n = 1:num_cycl                      % loop over cycles
             end
             %dd(i+(n-1)*num_gelas,j) = nearest_dist;       % DO NOT DELETE
         end
-    
-        partn(i,n) = nearest_gela;              % list partners
+        if nearest_gela ~= 0
+        partn(i,nearest_gela) = partn(i,nearest_gela)+1;              % list partners
+        end
         %after one round they forget with whom they interacted
         just_interacted = zeros(num_gelas,1);
 
@@ -113,7 +123,7 @@ for n = 1:num_cycl                      % loop over cycles
 
                 % Plot interaction
                 plotall(xpos,ypos,spawning_size,field_size,gela_nr,i,nearest_gela,1);
-                pause(1);
+                pause(dt);
                 %plotinteract2(i, xpos(i),ypos(i),0,'middle');
                 %plotinteract2(nearest_gela, xpos(nearest_gela),ypos(nearest_gela),0,'middle');
                 
@@ -122,8 +132,8 @@ for n = 1:num_cycl                      % loop over cycles
                     % i = winner | nearest_gelada = loser
                     % -> i stays, nearest_gela flees in random direction
                     rnd_direction = rand;
-                    xpos(nearest_gela) = x_move_away_random(xpos(nearest_gela),flee_dist,rnd_direction);
-                    ypos(nearest_gela) = y_move_away_random(ypos(nearest_gela),flee_dist,rnd_direction);
+                    xpos(nearest_gela) = move_away_random(xpos(nearest_gela),flee_dist,cos(2*pi*rnd_direction));
+                    ypos(nearest_gela) = move_away_random(ypos(nearest_gela),flee_dist,sin(2*pi*rnd_direction));
 
                     % Statistics
                     
@@ -158,8 +168,8 @@ for n = 1:num_cycl                      % loop over cycles
                     % i = loser | nearest_gela = winner
                     % -> nearest_gela stays, i flees in random direction
                     rnd_direction = rand;
-                    xpos(i) = x_move_away_random(xpos(i),flee_dist,rnd_direction);
-                    ypos(i) = y_move_away_random(ypos(i),flee_dist,rnd_direction);
+                    xpos(i) = move_away_random(xpos(i),flee_dist,cos(2*pi*rnd_direction));
+                    ypos(i) = move_away_random(ypos(i),flee_dist,sin(2*pi*rnd_direction));
 
                     % Statistics
                     outcome(i) = 2;
@@ -300,9 +310,8 @@ for n = 1:num_cycl                      % loop over cycles
                 pause(dt);
                 
                 % move randomly
-                rnd_direction = rand;
-                xpos(i) = x_move_away_random(xpos(i),mov_dist,rnd_direction);
-                ypos(i) = y_move_away_random(ypos(i),mov_dist,rnd_direction);
+                xpos(i) = move_away_random(xpos(i),mov_dist,cos(2*pi*rnd_direction));
+                ypos(i) = move_away_random(ypos(i),mov_dist,sin(2*pi*rnd_direction));
                 %xpos(i) = move(xpos(i),2*mov_multip,field_size);
                 %ypos(i) = move(ypos(i),2*mov_multip,field_size);
                 

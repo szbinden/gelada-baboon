@@ -1,4 +1,4 @@
-function [ x_new ] = x_move_away_random(x, flee_dist, direction)
+function [ coordinate_new ] = move_away_random(coordinate, flee_dist, direction)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -9,7 +9,7 @@ function [ x_new ] = x_move_away_random(x, flee_dist, direction)
 %else
 %    y = x+d*cos(2*pi*rand);
  %   while -f+1 > y || f < y
- x_new = x+flee_dist*direction;
+ coordinate_new = coordinate+flee_dist*direction;
  %   end
  
  %Fehlt:

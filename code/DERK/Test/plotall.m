@@ -15,6 +15,7 @@ grid on;
 rectangle('Position',[-spawning_size/2,-spawning_size/2,spawning_size,spawning_size]);
 %text(-0.6,-0.1,int2str(n));
 axis([-(field_size/2) (field_size/2) -(field_size/2) (field_size/2)]);                  % set field size
+hold off;
 text(xpos(:),ypos(:),int2str(gela_nr),'FontSize',14);
 %hold off;
 
@@ -38,11 +39,11 @@ elseif interact_type == 3
 % i grooms nearest
 elseif interact_type == 4
     text(xpos(i), ypos(i), num2str(i),'Color','m','FontWeight','bold','FontSize',14)
-    text(xpos(nearest), ypos(nearest), num2str(nearest),'Color','m','FontWeight','bold','FontSize',14)
+    text(xpos(nearest), ypos(nearest), num2str(nearest),'Color','b','FontWeight','bold','FontSize',14)
 
 % doing a random walk
 elseif interact_type == 5
-    text(xpos(i), ypos(i), num2str(i),'Color','y','FontWeight','bold','FontSize',14)
+    text(xpos(i), ypos(i), num2str(i),'Color','c','FontWeight','bold','FontSize',14)
 
 % no interaction
 else
