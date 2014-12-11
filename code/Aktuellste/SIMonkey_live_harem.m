@@ -1,5 +1,5 @@
 %% 0. SIMonkey
-clear all, clc                          % delete all data
+clear, clc, close all                        % delete all data
 
 %% 1. set inital conditions
 %Simulation
@@ -18,8 +18,8 @@ ypos = spawning_size*rand(num_gelas,1)-(spawning_size/2);   % y-positions at the
 perspace = 8;                           % a baboons close encounter distance (interaction only happens if other baboon is within this distance)
 view = 50;                              % a baboons viewing distance
 interact_dist = 1;                      % distance between two geladas when they interact (upon interaction they approach each other to this distance)
-flee_dist = 3;                          % fleeing_distance after losing fight
-mov_dist = 2;                           % distance of random movement if no one in sight
+flee_dist = 4;                          % fleeing_distance after losing fight
+mov_dist = 3;                           % distance of random movement if no one in sight
 %mov_multip = 0.02;                     % multiplier for moving act
 %flee_multip = 0.2;                     % multiplier for fleeing act
 %activity = 0.8;                        % baboon's activity
@@ -153,7 +153,7 @@ for n = 1:num_cycl
                     ypos(loser) = move_away_random(ypos(loser),flee_dist,sin(2*pi*rnd_direction));
                     
                     % plot
-                    pause(0.1)
+                    pause(0.1)          %nötig damit neue pos auch geplottet wird...
                     plotinteraction(gela_nr,xpos,ypos,gender,alpha,spawning_size,field_size,i,nearest_gela,outcome(i));
                     pause(dt);
                     %plotinteract2(i, xpos(i),ypos(i),outcome(i));

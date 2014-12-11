@@ -1,10 +1,10 @@
 %% 0. SIMonkey
-clear, clc                          % delete all data
+clear all, clc                          % delete all data
 
 %% 1. set inital conditions
 %Simulation
 num_cycl = 20;                          % number of cycles
-fast_mode = 1;                          % 1 -> fast mode activated (for investigations of outcome after several timesteps, interactions can't be watched)
+fast_mode = 0;                          % 1 -> fast mode activated (for investigations of outcome after several timesteps, interactions can't be watched)
                                         % 0 -> fast mode deactivated (interactions can be watched live, takes a very long time for large 'num_cycl'!)
 %World
 field_size = 50;                        % size of the world
@@ -43,7 +43,7 @@ gender = zeros(num_gelas,1);            % gender vector ->  1) set all to zero
 ix = randperm(numel(gender));           %                   2) randomize the linear indices
 ix = ix(1:num_males);                   %                   3) select the first 
 gender(ix) = 1;                         %                   4) set the corresponding positions to 1
-dt = 0.5;                               % set length of pause after every activation and every plot
+dt = 0.3;                               % set length of pause after every activation and every plot
 if (fast_mode == 1)
     dt = 0.05;    
 end
@@ -341,13 +341,8 @@ for n = 1:num_cycl
 %             % calculate average anxieties
 %             anx_sum(i) = anx_sum(i)+anx(i);     % sum over n cycles
 %             anx_avrg(i) = anx_sum(i)/n;          % average over n cycles
-        end
-        
-        % each individual checks if it's the strongest -> and if so, gets the alpha-animal
-        if dom(i) == max(dom);
-        alpha = i;
-        end
-        
+        end  
+     
         % Anxiety increases anyway after each cycle
         anx(i) = anx(i)+anx(i)*anx_inc;
         % set minimum of anxiety
@@ -378,6 +373,8 @@ for n = 1:num_cycl
     
 % after one round they forget with whom they interacted
 just_interacted = zeros(num_gelas,1);
+% the male with the highest dominance is defined as the alpha male
+alpha = dommax(dom);
 
 
 %% 7 subplot 1-4 (Values & Statistics)

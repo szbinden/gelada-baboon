@@ -3,7 +3,7 @@ function [ king ] = dommax(dom)
 %   Detailed explanation goes here
 
 for j = 1:length(dom)
-if 
+if ()
     
 end   
     
