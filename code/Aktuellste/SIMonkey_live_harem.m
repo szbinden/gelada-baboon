@@ -5,25 +5,25 @@ clear, clc, close all                        % delete all data
 global gela_nr xpos ypos gender alpha i nearest dom anx dom_avrg anx_avrg outcome vict defe grmr grme field_size spawning_size
 
 %% 1. set inital conditions
-%Simulation
-num_cycl = 20;                          % number of cycles
-dt = 1;                              % pause between each individul/plot updating time
-mode = 'all';                           % decide how the mainplot shall be ploted
+% simulation
+num_cycl = 100;                         % number of cycles
+dt = 0.0001;                            % pause between each individul/plot updating time
+mode = 'none';                          % decide how the mainplot shall be ploted
                                         % 'none'         - no plots at all during loop
                                         % 'all'          - plot every interaction
-%World
-field_size = 50;                        % size of the world
-spawning_size = 30;                     % size of square where geladas are distributed at the beginning
+% world
+field_size = 30;                        % size of the world
+spawning_size = 20;                     % size of square where geladas are distributed at the beginning
 
-%Gelada Baboons
-num_gelas = 12;                         % number of baboons
+% gelada Baboons
+num_gelas = 20;                         % number of baboons
 num_males = 4;                          % number of males (< num_gelas!!)
 
 xpos = spawning_size*rand(num_gelas,1)-(spawning_size/2);   % x-positions at the beginning (random, within 'spawning square')
 ypos = spawning_size*rand(num_gelas,1)-(spawning_size/2);   % y-positions at the beginning (random, within 'spawning square')
 
-view_dist = 50;                         % a baboons viewing distance
-perspace = 8;                           % a baboons close encounter distance (interaction only happens if other baboon is within this distance)
+view_space = 16;                        % a baboons viewing space
+interaction_space = 8;                  % a baboons close encounter distance (interaction only happens if other baboon is within this distance)
 interact_dist = 1;                      % distance between two geladas when they interact (upon interaction they approach each other to this distance)
 flee_dist = 4;                          % fleeing_distance after losing fight
 mov_dist = 3;                           % distance of random movement if no one in sight
@@ -49,7 +49,7 @@ ix = randperm(numel(gender));           %                   2) randomize the lin
 ix = ix(1:num_males);                   %                   3) select the first 
 gender(ix) = 1;                         %                   4) set the corresponding positions to 1
 
-%Statistics
+% Statistics
 partn = zeros(num_gelas);               % list of interaction partners
 vict = zeros(num_gelas,1);              % list of victories fights per baboon
 defe = zeros(num_gelas,1);              % list of defeats fights per baboon
@@ -67,22 +67,22 @@ for n = 1:num_cycl
     for i = 1:num_gelas     % i = 'active baboon'
         %% 5. find individual for interaction
         nearest = 0;   % nearest OTHER baboon
-        nearest_dist = view_dist;    % view is just an auxilary value needed for the following if condition, till a baboon is found
+        nearest_dist = view_space;          % view is just an auxilary value needed for the following if condition, till a baboon is found
         nearest_male = 0;
-        nearest_male_dist = view_dist;   % view is just an auxilary value needed for the following if condition, till a baboon is found
+        nearest_male_dist = view_space;     % view is just an auxilary value needed for the following if condition, till a baboon is found
         
         % scan over all baboons
         for j = 1:num_gelas             
             % find individual that is: within my view & nearer to me than the others  & not me &  I did not interact with in the last round                                   
-            if (dist(xpos,ypos,i,j) < view_dist && dist(xpos,ypos,i,j) < nearest_dist && (j ~= i) && (just_interacted(i) ~= j) && (just_interacted(j) ~= i))
+            if (dist(xpos,ypos,i,j) < view_space && dist(xpos,ypos,i,j) < nearest_dist && (j ~= i) && (just_interacted(i) ~= j) && (just_interacted(j) ~= i))
                 nearest = j;   % set found individual to nearest baboon
-                nearest_dist = dist(xpos,ypos,i,j);   % set distance to found individual to new 'nearest distance'
+                nearest_dist = dist(xpos,ypos,i,j);         % set distance to found individual to new 'nearest distance'
             end
             
             % for alpha-male: it seeks the nearest other MALE to fight it
-            if (alpha == i && gender(j) == 1 && dist(xpos,ypos,i,j) < view_dist && dist(xpos,ypos,i,j) < nearest_male_dist && (j ~= i))
+            if (alpha == i && gender(j) == 1 && dist(xpos,ypos,i,j) < view_space && dist(xpos,ypos,i,j) < nearest_male_dist && (j ~= i))
                 nearest_male = j;   % set found individual to nearest baboon
-                nearest_male_dist = dist(xpos,ypos,i,j);   % set distance to found individual to new 'nearest distance'
+                nearest_male_dist = dist(xpos,ypos,i,j);    % set distance to found individual to new 'nearest distance'
             end
         end
         
@@ -95,30 +95,30 @@ for n = 1:num_cycl
         % If a partner was found, interactions starts (6.1), else no interaction happens (6.2)
         if (nearest ~= 0)
             %% 6. interaction (a partner was found)
-            if (nearest_dist <= perspace)   %it is near enough
+            if (nearest_dist <= interaction_space)          %it is near enough
                 %% 6.1 go to other baboon
                 % Statistics
-                partn(i,nearest) = partn(i,nearest)+1;    % list partners
+                partn(i,nearest) = partn(i,nearest)+1;      % list partners
                 
                 % plot
                 outcome(i)=0; 
                 plotmnpl(mode, dt);
                 
                 % 'i' moves to neighbour up to 'interact_dist'
-                xpos(i) = x_move_to_individual(xpos(i),ypos(i),xpos(nearest),ypos(nearest),interact_dist);
-                ypos(i) = y_move_to_individual(xpos(i),ypos(i),xpos(nearest),ypos(nearest),interact_dist);
+                xpos(i) = moveto(xpos(i),xpos(nearest),nearest_dist,interact_dist);
+                ypos(i) = moveto(ypos(i),ypos(nearest),nearest_dist,interact_dist);
                 
                 % plot
                 plotmnpl(mode, dt);
                  
-                % shall i fight or groom? If following condition is true -> fight (chances of winning are estimated on the basis of the strengths (dom values))
-                if (dom(i)/(dom(i)+dom(nearest)) >= rand)
+                % shall i fight or groom?
+                % if true -> fight (chances of winning are estimated on the basis of own relative dominances)
+                if dom(i)/(dom(i)+dom(nearest)) >= rand && dom(i)/(dom(i)+dom(nearest)) >= rand
                     %%  6.1.1 fight
                     % Attack
                     if dom(i)/(dom(i)+dom(nearest)) >= rand    % if true -> i = winner
                         % i = winner | nearest = loser
-                        outcome(i) = 1;                             % outcome(i,n) = 1;
-                        %outcome(nearest) = 2;                  % outcome(o+i*num_gelas,n) = 0;
+                        outcome(i) = 1;                                      
                         winner = i;
                         loser = nearest;    
                     else
@@ -127,14 +127,10 @@ for n = 1:num_cycl
                         winner = nearest;
                         loser = i;
                     end
-                    
-                    % plot outcome
-                    plotinteraction(gela_nr,xpos,ypos,gender,alpha,spawning_size,field_size,i,nearest,outcome(i));
-                    
                     % -> winner stays, loser flees in random direction
                     rnd_direction = rand;
-                    xpos(loser) = move_away_random(xpos(loser),flee_dist,cos(2*pi*rnd_direction));
-                    ypos(loser) = move_away_random(ypos(loser),flee_dist,sin(2*pi*rnd_direction));
+                    xpos(loser) = move(xpos(loser),flee_dist,cos(2*pi*rnd_direction));
+                    ypos(loser) = move(ypos(loser),flee_dist,sin(2*pi*rnd_direction));
                     
                     % Statistics (increment victories/defeats)
                     vict(winner) = vict(winner)+1;
@@ -142,8 +138,9 @@ for n = 1:num_cycl
                     
                     % Write new dominances
                     stepdom = rand;     % represents intensity of interaction
+                    dom_t = dom(winner);
                     dom(winner) = dom(winner)+(outcome(i)-(dom(winner)/(dom(winner)+dom(loser))))*stepdom;
-                    dom(loser) = dom(loser)-(outcome(i)-(dom(loser)/(dom(winner)+dom(loser))))*stepdom;
+                    dom(loser) = dom(loser)-(outcome(i)-(dom(loser)/(dom_t+dom(loser))))*stepdom;
                     
                     % anxiety of both geladas grows because of the fight
                     anx(i) = anx(i)+anx_inc_fight;
@@ -158,6 +155,7 @@ for n = 1:num_cycl
                         %% 6.1.2 grooming
                         % Groom (i = groomer | nearest = groomee)
                         outcome(i) = 4;
+                        outcome(nearest) = 3;
                        
                         % write new anxieties
                         anx(i) = anx(i)-anx_dcr_grmr;
@@ -181,9 +179,8 @@ for n = 1:num_cycl
                 outcome(i) = 5;
                 
                 % move 1 step (mov_dist) towards nearest neighbour
-                remain_distance = dist(xpos,ypos,i,nearest)-mov_dist;
-                xpos(i) = x_move_to_individual(xpos(i),ypos(i),xpos(nearest),ypos(nearest),remain_distance);
-                ypos(i) = y_move_to_individual(xpos(i),ypos(i),xpos(nearest),ypos(nearest),remain_distance);
+                xpos(i) = moveto(xpos(i),xpos(nearest),nearest_dist,nearest_dist-mov_dist);
+                ypos(i) = moveto(ypos(i),ypos(nearest),nearest_dist,nearest_dist-mov_dist);
                 
                 % decrement dominance by not being active
                 dom(i) = dom(i)-dom_dcr*dom(i);  
@@ -193,9 +190,9 @@ for n = 1:num_cycl
             outcome(i) = 5;
 
             % move randomly
-            rnd_direction = rand;   % define random variable
-            xpos(i) = move_away_random(xpos(i),mov_dist,cos(2*pi*rnd_direction));
-            ypos(i) = move_away_random(ypos(i),mov_dist,sin(2*pi*rnd_direction));
+            rnd_direction = rand;       % define random variable
+            xpos(i) = move(xpos(i),mov_dist,cos(2*pi*rnd_direction));
+            ypos(i) = move(ypos(i),mov_dist,sin(2*pi*rnd_direction));
             
             % decrement dominance by not being active
             dom(i) = dom(i)-dom_dcr*dom(i);
@@ -208,6 +205,7 @@ for n = 1:num_cycl
         
         % Anxiety increases anyway after each cycle
         anx(i) = anx(i)+anx(i)*anx_inc;
+        
         % set minimum of dominance/anxiety
         dom(i) = setminof(dom(i),dom_min);
         anx(i) = setminof(anx(i),anx_min);
@@ -216,14 +214,14 @@ for n = 1:num_cycl
             anx(nearest) = setminof(anx(nearest),anx_min);
         end
         
-        % Statistics
+        % statistics
         % calculate averages of dom / anx
-        dom_sum = dom_sum+dom;                 % sum over baboons and cycles
+        dom_sum = dom_sum+dom;                    % sum over baboons and cycles
         dom_avrg = dom_sum/((n-1)*num_gelas+i);   % average over all updates
-        anx_sum = anx_sum+anx;                 % sum
+        anx_sum = anx_sum+anx;                    % sum
         anx_avrg = anx_sum/((n-1)*num_gelas+i);   % average over all updates
         
-        % Plot
+        % updated plot
         plotmnpl(mode,dt)
         plotsbpl(mode,dt/10)
     end
@@ -232,3 +230,7 @@ for n = 1:num_cycl
 just_interacted = zeros(num_gelas,1);
 
 end
+
+% final plot
+plotmnpl('all',dt)
+plotsbpl('all',dt)

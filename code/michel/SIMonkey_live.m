@@ -2,7 +2,7 @@
 clear all, clc                          % delete all data
 
 %% 1 inital conditions
-crcl = 200;                             % number of cycles
+crcl = 2;                             % number of cycles
 gela = 14;                               % number of baboons
 dt = 0.1;                               % plot updating time
 
