@@ -6,9 +6,9 @@ global gela_nr xpos ypos gender alpha i nearest dom anx dom_avrg anx_avrg outcom
 
 %% 1. set inital conditions
 % simulation
-num_cycl = 100;                         % number of cycles
+num_cycl = 80;                         % number of cycles
 dt = 0.001;                            % pause between each individul/plot updating time
-mode = 'none';                          % decide how the mainplot shall be ploted
+mode = 'all';                          % decide how the mainplot shall be ploted
                                         % 'none'         - no plots at all during loop
                                         % 'all'          - plot every interaction
 % world
