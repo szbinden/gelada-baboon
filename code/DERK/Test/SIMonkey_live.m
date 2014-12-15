@@ -386,10 +386,16 @@ for n = 1:num_cycl
 %             end
 %         end
        
+<<<<<<< Updated upstream
 %pause(dt)
           
     end
+=======
+pause(dt)
+>>>>>>> Stashed changes
 
+        end
+        
 %% 7 subplot 1-4
 if max(vict) < max(defe)
     fmax = 5*ceil((max(defe)+1)/5);
@@ -448,4 +454,6 @@ GEA(2).YColor = [50,177,65]/255;
 B41.EdgeColor = 'b';
 S42.Color = [50,177,65]/255;
 grid on
+
+
 end
