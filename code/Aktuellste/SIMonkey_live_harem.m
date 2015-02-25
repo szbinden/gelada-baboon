@@ -5,10 +5,21 @@ clear, clc, close all                        % delete all data
 global gela_nr xpos ypos gender alpha i nearest dom anx dom_avrg anx_avrg outcome vict defe grmr grme field_size spawning_size
 
 %% 1. set inital conditions
+<<<<<<< Updated upstream
 % simulation
 num_cycl = 80;                         % number of cycles
 dt = 0.001;                            % pause between each individul/plot updating time
+<<<<<<< Updated upstream
 mode = 'all';                          % decide how the mainplot shall be ploted
+=======
+mode = 'none';                          % decide how the mainplot shall be ploted
+=======
+%Simulation
+num_cycl = 50;                          % number of cycles
+dt = 0.1;                              % pause between each individul/plot updating time
+mode = 'none';                           % decide how the mainplot shall be ploted
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
                                         % 'none'         - no plots at all during loop
                                         % 'all'          - plot every interaction
 % world
@@ -25,8 +36,13 @@ ypos = spawning_size*rand(num_gelas,1)-(spawning_size/2);   % y-positions at the
 view_space = 16;                        % a baboons viewing space
 interaction_space = 8;                  % a baboons close encounter distance (interaction only happens if other baboon is within this distance)
 interact_dist = 1;                      % distance between two geladas when they interact (upon interaction they approach each other to this distance)
+<<<<<<< Updated upstream
 flee_dist = 10;                          % fleeing_distance after losing fight
 mov_dist = 4;                           % distance of random movement if no one in sight
+=======
+flee_dist = 3;                          % fleeing_distance after losing fight
+mov_dist = 3;                           % distance of random movement if no one in sight
+>>>>>>> Stashed changes
 
 dom = 0.25*ones(num_gelas,1);            % initial values of dominance
 dom_dcr = 0.01;                         % percentual decrease in dominance when gelada does not interact (default: 1%)
@@ -96,6 +112,12 @@ for n = 1:num_cycl
                 nearest_male = j;   % set found individual to nearest baboon
                 nearest_male_dist = dist(xpos,ypos,i,j);    % set distance to found j to new 'nearest male distance'
             end
+            
+            if (gender(i) == 0 && j == alpha && dist(xpos,ypos,i,j) < perspace && (j ~= i))
+                nearest_male = j;   % set found individual to nearest baboon
+                nearest_male_dist = dist(xpos,ypos,i,j);   % set distance to found individual to new 'nearest distance'
+            end
+            
         end
         
         %if the alpha male found another male within it's view it's gonna interact with this one
@@ -123,27 +145,55 @@ for n = 1:num_cycl
                 % plot
                 plotmnpl(mode, dt);
                  
+<<<<<<< Updated upstream
                 % shall i fight or groom?
                 % if true -> fight (chances of winning are estimated on the basis of own relative dominances)
+<<<<<<< Updated upstream
                 if (gender(i) == 1 && gender(nearest) == 1 && dom(i)/(dom(i)+dom(nearest)) >= rand) ||  (dom(i)/(dom(i)+dom(nearest)) >= rand && dom(i)/(dom(i)+dom(nearest)) >= rand)
                     %%  6.1.1 fight
                     % Attack
                     % i = winner | nearest = loser   
                     if dom(i)/(dom(i)+dom(nearest)) >= rand                                       
+=======
+                if dom(i)/(dom(i)+dom(nearest)) >= rand && dom(i)/(dom(i)+dom(nearest)) >= rand
+=======
+                % shall i fight or groom? If following condition is true -> fight (chances of winning are estimated on the basis of the strengths (dom values))
+                if (dom(i)/(dom(i)+dom(nearest)) >= rand && (dom(i)/(dom(i)+dom(nearest)) >= rand)) % represents two inner fights. if winning both -> go into fight
+>>>>>>> Stashed changes
+                    %%  6.1.1 fight
+                    % Attack
+                    if (dom(i)/(dom(i)+dom(nearest)) >= rand)   % -if true -> i = winner
+                        % i = winner | nearest = loser
+                        outcome(i) = 1;                                      
+>>>>>>> Stashed changes
                         winner = i;
                         loser = nearest;    
                     else
                         winner = nearest;
                         loser = i;
                     end
+<<<<<<< Updated upstream
                     outcome(winner) = 1;
                     outcome(loser) = 0;
+=======
+<<<<<<< Updated upstream
+                    % -> winner stays, loser flees in random direction
+                    rnd_direction = rand;
+                    xpos(loser) = move(xpos(loser),flee_dist,cos(2*pi*rnd_direction));
+                    ypos(loser) = move(ypos(loser),flee_dist,sin(2*pi*rnd_direction));
+=======
+                    
+                    % plot outcome
+                    plotinteraction(gela_nr,xpos,ypos,gender,alpha,spawning_size,field_size,i,nearest,outcome(i));
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
                     
                     % Statistics (increment victories/defeats)
                     vict(winner) = vict(winner)+1;
                     defe(loser) = defe(loser)+1;
                     
                     % Write new dominances
+<<<<<<< Updated upstream
                     % represents intensity of interaction
                     dom_step = rand;
                     % dominance changes for the same amount
@@ -153,6 +203,19 @@ for n = 1:num_cycl
                     % anxiety grows anyway because of the fight
                     anx(winner) = anx(winner)+anx_inc_fight;
                     anx(loser) = anx(loser)+anx_inc_fight;
+=======
+                    stepdom = rand;     % represents intensity of interaction
+<<<<<<< Updated upstream
+                    dom_t = dom(winner);
+=======
+                    if (winner == alpha)     % the alpha animal always fights the other males with full intensity
+                        stepdom = 3;
+                    end
+                        
+>>>>>>> Stashed changes
+                    dom(winner) = dom(winner)+(outcome(i)-(dom(winner)/(dom(winner)+dom(loser))))*stepdom;
+                    dom(loser) = dom(loser)-(outcome(i)-(dom(loser)/(dom_t+dom(loser))))*stepdom;
+>>>>>>> Stashed changes
                     
                     % winner stays
                     rnd_direction = rand;
@@ -165,6 +228,11 @@ for n = 1:num_cycl
                         xpos(loser) = move(xpos(winner),flee_dist*dom_step,cos(2*pi*rnd_direction));
                         ypos(loser) = move(ypos(winner),flee_dist*dom_step,sin(2*pi*rnd_direction));
                     end
+                    
+                    % -> winner stays, loser flees in random direction
+                    rnd_direction = rand;
+                    xpos(loser) = move_away_random(xpos(loser),stepdom*flee_dist,cos(2*pi*rnd_direction));
+                    ypos(loser) = move_away_random(ypos(loser),stepdom*flee_dist,sin(2*pi*rnd_direction));
                     
                     % gelada i remembers whith whom he just interacted
                     just_interacted(i) = nearest; 

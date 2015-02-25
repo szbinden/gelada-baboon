@@ -6,8 +6,8 @@ global gela_nr xpos ypos gender alpha i nearest dom anx dom_avrg anx_avrg outcom
 
 %% 1. set inital conditions
 % simulation
-num_cycl = 80;                         % number of cycles
-dt = 0.001;                            % pause between each individul/plot updating time
+num_cycl = 200;                         % number of cycles
+dt = 0.5;                            % pause between each individul/plot updating time
 mode = 'all';                          % decide how the mainplot shall be ploted
                                         % 'none'         - no plots at all during loop
                                         % 'all'          - plot every interaction
@@ -25,7 +25,7 @@ ypos = spawning_size*rand(num_gelas,1)-(spawning_size/2);   % y-positions at the
 view_space = 16;                        % a baboons viewing space
 interaction_space = 8;                  % a baboons close encounter distance (interaction only happens if other baboon is within this distance)
 interact_dist = 1;                      % distance between two geladas when they interact (upon interaction they approach each other to this distance)
-flee_dist = 10;                          % fleeing_distance after losing fight
+flee_dist = 8;                          % fleeing_distance after losing fight
 mov_dist = 4;                           % distance of random movement if no one in sight
 
 dom = 0.25*ones(num_gelas,1);            % initial values of dominance
@@ -92,7 +92,7 @@ for n = 1:num_cycl
             end
             
             % for males: they seek the nearest other MALE to fight it
-            if gender(i) == 1 && gender(j) == 1 && dist(xpos,ypos,i,j) < nearest_male_dist && (j ~= i)
+            if alpha == i && gender(j) == 1 && dist(xpos,ypos,i,j) < nearest_male_dist && (j ~= i)
                 nearest_male = j;   % set found individual to nearest baboon
                 nearest_male_dist = dist(xpos,ypos,i,j);    % set distance to found j to new 'nearest male distance'
             end
@@ -125,11 +125,12 @@ for n = 1:num_cycl
                  
                 % shall i fight or groom?
                 % if true -> fight (chances of winning are estimated on the basis of own relative dominances)
-                if (gender(i) == 1 && gender(nearest) == 1 && dom(i)/(dom(i)+dom(nearest)) >= rand) ||  (dom(i)/(dom(i)+dom(nearest)) >= rand && dom(i)/(dom(i)+dom(nearest)) >= rand)
+                if (gender(i) == 1 && gender(nearest) == 1 && dom(i)/(dom(i)+dom(nearest)) >= rand) ||...
+                        (dom(i)/(dom(i)+dom(nearest)) >= rand && dom(i)/(dom(i)+dom(nearest)) >= rand)
                     %%  6.1.1 fight
                     % Attack
                     % i = winner | nearest = loser   
-                    if dom(i)/(dom(i)+dom(nearest)) >= rand                                       
+                    if dom(i)/(dom(i)+dom(nearest)) >= rand                                                       
                         winner = i;
                         loser = nearest;    
                     else
@@ -157,7 +158,10 @@ for n = 1:num_cycl
                     % winner stays
                     rnd_direction = rand;
                     % loser of male-male fight flees
-                    if gender(winner) == 1 && gender(loser) == 1
+                    if (alpha == winner && gender(loser) == 1) || (alpha == loser && gender(winner) == 1)
+                        xpos(loser) = move(xpos(winner),2*flee_dist,cos(2*pi*rnd_direction));
+                        ypos(loser) = move(ypos(winner),2*flee_dist,sin(2*pi*rnd_direction));
+                    elseif gender(winner) == 1 && gender(loser) == 1
                         xpos(loser) = move(xpos(winner),flee_dist,cos(2*pi*rnd_direction));
                         ypos(loser) = move(ypos(winner),flee_dist,sin(2*pi*rnd_direction));
                     % loser of other fights flee
